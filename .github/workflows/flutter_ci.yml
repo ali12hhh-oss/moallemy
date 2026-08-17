@@ -25,9 +25,6 @@ jobs:
           test -f android/app/build.gradle.kts
           test -f android/gradle/wrapper/gradle-wrapper.properties
 
-      - name: Flutter version
-        run: flutter --version
-
       - name: Flutter pub get
         run: flutter pub get
 
@@ -37,27 +34,48 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Build APK
-        run: flutter build apk --release
-
-      - name: Check APK
-        if: always()
+      - name: Build APK and locate output
+        shell: bash
         run: |
-          echo "APK files:"
+          set +e
+          flutter build apk --release
+          FLUTTER_EXIT=$?
+
+          echo ""
+          echo "========== BUILD RESULT =========="
+          echo "flutter build apk exit code: $FLUTTER_EXIT"
+          echo ""
+
+          echo "========== APK FILES UNDER build/ =========="
           find build -type f -name "*.apk" -print 2>/dev/null || true
-          echo "Expected APK:"
-          test -f build/app/outputs/flutter-apk/app-release.apk
+
+          echo ""
+          echo "========== APK FILES UNDER android/ =========="
+          find android -type f -name "*.apk" -print 2>/dev/null || true
+
+          echo ""
+          echo "========== EXPECTED FLUTTER APK =========="
+          if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
+            ls -lh build/app/outputs/flutter-apk/app-release.apk
+          else
+            echo "NOT FOUND: build/app/outputs/flutter-apk/app-release.apk"
+          fi
+
+          echo ""
+          echo "========== GRADLE APK OUTPUTS =========="
+          find android/app/build -type f -name "*.apk" -print 2>/dev/null || true
+
+          echo ""
+          echo "========== GRADLE RELEASE OUTPUTS =========="
+          find android/app/build/outputs -maxdepth 6 -type f -print 2>/dev/null || true
+
+          echo ""
+          echo "========== END DIAGNOSTIC =========="
+
+          exit $FLUTTER_EXIT
 
       - name: Build AAB
         run: flutter build appbundle --release
-
-      - name: Check AAB
-        if: always()
-        run: |
-          echo "AAB files:"
-          find build -type f -name "*.aab" -print 2>/dev/null || true
-          echo "Expected AAB:"
-          test -f build/app/outputs/bundle/release/app-release.aab
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
