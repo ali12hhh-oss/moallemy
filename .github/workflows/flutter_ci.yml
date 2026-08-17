@@ -8,16 +8,25 @@ on:
 jobs:
   analyze-test-build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
       - name: Verify Android project
-        run: test -f android/settings.gradle.kts && test -f android/app/build.gradle.kts
+        run: |
+          test -f android/settings.gradle.kts
+          test -f android/app/build.gradle.kts
+          test -f android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Flutter version
+        run: flutter --version
 
       - name: Flutter pub get
         run: flutter pub get
@@ -29,19 +38,57 @@ jobs:
         run: flutter test
 
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release -v
+
+      - name: Inspect APK output
+        if: always()
+        run: |
+          echo "===== APK OUTPUT DIRECTORY ====="
+          if [ -d "build/app/outputs" ]; then
+            find build/app/outputs -maxdepth 5 -type f -print
+          else
+            echo "build/app/outputs does not exist"
+          fi
+
+          echo "===== APK SEARCH ====="
+          find build -type f \( -name "*.apk" -o -name "*.aab" \) -print 2>/dev/null || true
+
+      - name: Verify APK exists
+        run: |
+          test -f build/app/outputs/flutter-apk/app-release.apk
 
       - name: Build AAB
-        run: flutter build appbundle --release
+        run: |
+          flutter build appbundle --release -v
+
+      - name: Inspect AAB output
+        if: always()
+        run: |
+          echo "===== AAB OUTPUT DIRECTORY ====="
+          if [ -d "build/app/outputs" ]; then
+            find build/app/outputs -maxdepth 5 -type f -print
+          else
+            echo "build/app/outputs does not exist"
+          fi
+
+          echo "===== AAB SEARCH ====="
+          find build -type f \( -name "*.apk" -o -name "*.aab" \) -print 2>/dev/null || true
+
+      - name: Verify AAB exists
+        run: |
+          test -f build/app/outputs/bundle/release/app-release.aab
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: daleel-child-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: daleel-child-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
