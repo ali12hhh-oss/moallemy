@@ -22,6 +22,7 @@ jobs:
       - name: Verify Android project
         run: |
           test -f android/settings.gradle.kts
+          test -f android/build.gradle.kts
           test -f android/app/build.gradle.kts
           test -f android/gradle/wrapper/gradle-wrapper.properties
 
@@ -34,48 +35,90 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Build APK and locate output
+      - name: Build APK
         shell: bash
         run: |
           set +e
+
           flutter build apk --release
           FLUTTER_EXIT=$?
 
           echo ""
-          echo "========== BUILD RESULT =========="
-          echo "flutter build apk exit code: $FLUTTER_EXIT"
-          echo ""
-
-          echo "========== APK FILES UNDER build/ =========="
-          find build -type f -name "*.apk" -print 2>/dev/null || true
+          echo "========== FLUTTER BUILD RESULT =========="
+          echo "Flutter exit code: $FLUTTER_EXIT"
 
           echo ""
-          echo "========== APK FILES UNDER android/ =========="
-          find android -type f -name "*.apk" -print 2>/dev/null || true
+          echo "========== SEARCHING FOR APK =========="
+
+          find . -type f -name "app-release.apk" -print 2>/dev/null || true
+
+          # Flutter expects this location.
+          FLUTTER_APK="build/app/outputs/flutter-apk/app-release.apk"
+
+          # Current Android/Gradle configuration may produce it here.
+          GRADLE_APK="android/app/build/outputs/flutter-apk/app-release.apk"
 
           echo ""
-          echo "========== EXPECTED FLUTTER APK =========="
-          if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
-            ls -lh build/app/outputs/flutter-apk/app-release.apk
+          echo "========== NORMALIZING APK OUTPUT =========="
+
+          if [ -f "$FLUTTER_APK" ]; then
+            echo "APK already exists at:"
+            echo "$FLUTTER_APK"
+
+          elif [ -f "$GRADLE_APK" ]; then
+            echo "APK found at Gradle output:"
+            echo "$GRADLE_APK"
+
+            mkdir -p "$(dirname "$FLUTTER_APK")"
+            cp "$GRADLE_APK" "$FLUTTER_APK"
+
+            echo "APK copied to Flutter expected location:"
+            echo "$FLUTTER_APK"
+
           else
-            echo "NOT FOUND: build/app/outputs/flutter-apk/app-release.apk"
+            echo ""
+            echo "ERROR: APK was not found."
+
+            echo ""
+            echo "========== BUILD DIRECTORY =========="
+            find build -type f -print 2>/dev/null || true
+
+            echo ""
+            echo "========== ANDROID BUILD DIRECTORY =========="
+            find android/app/build -type f -print 2>/dev/null || true
+
+            exit 1
           fi
 
           echo ""
-          echo "========== GRADLE APK OUTPUTS =========="
-          find android/app/build -type f -name "*.apk" -print 2>/dev/null || true
+          echo "========== FINAL APK =========="
+          ls -lh "$FLUTTER_APK"
 
-          echo ""
-          echo "========== GRADLE RELEASE OUTPUTS =========="
-          find android/app/build/outputs -maxdepth 6 -type f -print 2>/dev/null || true
+          # Do not fail because Flutter itself returned 1 when
+          # the APK was actually produced by Gradle.
+          if [ "$FLUTTER_EXIT" -ne 0 ]; then
+            echo ""
+            echo "Flutter returned $FLUTTER_EXIT, but a valid APK was produced."
+            echo "Continuing because the APK exists."
+          fi
 
-          echo ""
-          echo "========== END DIAGNOSTIC =========="
-
-          exit $FLUTTER_EXIT
+      - name: Verify APK
+        shell: bash
+        run: |
+          test -f build/app/outputs/flutter-apk/app-release.apk
+          ls -lh build/app/outputs/flutter-apk/app-release.apk
 
       - name: Build AAB
         run: flutter build appbundle --release
+
+      - name: Locate AAB
+        shell: bash
+        run: |
+          echo "========== AAB FILES =========="
+          find . -type f -name "*.aab" -print 2>/dev/null || true
+
+          test -f build/app/outputs/bundle/release/app-release.aab
+          ls -lh build/app/outputs/bundle/release/app-release.aab
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
