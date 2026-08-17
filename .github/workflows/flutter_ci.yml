@@ -37,52 +37,26 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Build APK with Gradle
-        working-directory: android
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Check APK
+        if: always()
         run: |
-          chmod +x gradlew
-          ./gradlew :app:assembleRelease --no-daemon
-
-      - name: Collect APK
-        run: |
-          mkdir -p build/app/outputs/flutter-apk
-
-          APK_PATH="$(find android/app/build/outputs/apk/release -type f -name '*.apk' | head -n 1)"
-
-          if [ -z "$APK_PATH" ]; then
-            echo "ERROR: APK was not found."
-            echo "Available APK files:"
-            find android/app/build/outputs -type f -name '*.apk' -print || true
-            exit 1
-          fi
-
-          echo "APK found: $APK_PATH"
-          cp "$APK_PATH" build/app/outputs/flutter-apk/app-release.apk
-
+          echo "APK files:"
+          find build -type f -name "*.apk" -print 2>/dev/null || true
+          echo "Expected APK:"
           test -f build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Build AAB with Gradle
-        working-directory: android
+      - name: Build AAB
+        run: flutter build appbundle --release
+
+      - name: Check AAB
+        if: always()
         run: |
-          chmod +x gradlew
-          ./gradlew :app:bundleRelease --no-daemon
-
-      - name: Collect AAB
-        run: |
-          mkdir -p build/app/outputs/bundle/release
-
-          AAB_PATH="$(find android/app/build/outputs/bundle/release -type f -name '*.aab' | head -n 1)"
-
-          if [ -z "$AAB_PATH" ]; then
-            echo "ERROR: AAB was not found."
-            echo "Available AAB files:"
-            find android/app/build/outputs -type f -name '*.aab' -print || true
-            exit 1
-          fi
-
-          echo "AAB found: $AAB_PATH"
-          cp "$AAB_PATH" build/app/outputs/bundle/release/app-release.aab
-
+          echo "AAB files:"
+          find build -type f -name "*.aab" -print 2>/dev/null || true
+          echo "Expected AAB:"
           test -f build/app/outputs/bundle/release/app-release.aab
 
       - name: Upload APK
