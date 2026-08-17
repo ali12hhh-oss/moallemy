@@ -16,7 +16,7 @@ class _S extends State<GamesScreen> {
   int mode = 0, score = 0;
   late ArabicLetter target;
   List<ArabicLetter> options = [];
-  List<WordV11> match = [];
+  List<ArabicWordV11> match = [];
   int numberTarget = 0;
   List<int> numberOptions = [];
 
