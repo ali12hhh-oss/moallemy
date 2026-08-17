@@ -1,6 +1,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/data/math_curriculum_v14.dart';
+import 'package:daleel_child/data/math_curriculum_v14.dart';
 
 void main(){
   test('المسار الرياضي حسب الصف',(){

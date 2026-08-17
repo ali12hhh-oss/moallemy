@@ -1,7 +1,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/core/arabic/arabic_practice_engine_v16.dart';
-import '../lib/data/arabic_curriculum_v16.dart';
+import 'package:daleel_child/core/arabic/arabic_practice_engine_v16.dart';
+import 'package:daleel_child/data/arabic_curriculum_v16.dart';
 
 void main() {
   test('الحركات تولد سؤالاً وإجابة صحيحة ضمن الخيارات', () {
