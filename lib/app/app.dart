@@ -42,10 +42,10 @@ class _AppRoot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Stack(
+    return Stack(
       children: <Widget>[
-        HomeScreen(),
-        Positioned.fill(child: AppFeedbackOverlay()),
+        const HomeScreen(),
+        const Positioned.fill(child: AppFeedbackOverlay()),
       ],
     );
   }
