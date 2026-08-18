@@ -11,9 +11,7 @@ class AppFeedback {
   static void show(String text) {
     _timer?.cancel();
     message.value = text;
-    _timer = Timer(const Duration(seconds: 2), () {
-      message.value = null;
-    });
+    _timer = Timer(const Duration(seconds: 2), () => message.value = null);
   }
 }
 
@@ -26,7 +24,6 @@ class AppFeedbackOverlay extends StatelessWidget {
       valueListenable: AppFeedback.message,
       builder: (context, text, _) {
         if (text == null) return const SizedBox.shrink();
-
         final scheme = Theme.of(context).colorScheme;
         return IgnorePointer(
           child: Center(
@@ -38,50 +35,39 @@ class AppFeedbackOverlay extends StatelessWidget {
                 scale: scale,
                 child: child,
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 330),
-                  margin: const EdgeInsets.symmetric(horizontal: 28),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 18,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        scheme.primary,
-                        scheme.tertiary,
-                      ],
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 330),
+                margin: const EdgeInsets.symmetric(horizontal: 28),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [scheme.primary, scheme.tertiary]),
+                  borderRadius: BorderRadius.circular(26),
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheme.primary.withValues(alpha: .30),
+                      blurRadius: 26,
+                      offset: const Offset(0, 12),
                     ),
-                    borderRadius: BorderRadius.circular(26),
-                    boxShadow: [
-                      BoxShadow(
-                        color: scheme.primary.withValues(alpha: .30),
-                        blurRadius: 26,
-                        offset: const Offset(0, 12),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('✨', style: TextStyle(fontSize: 28)),
-                      const SizedBox(width: 12),
-                      Flexible(
-                        child: Text(
-                          text,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: scheme.onPrimary,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                            height: 1.25,
-                          ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('✨', style: TextStyle(fontSize: 28)),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        text,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: scheme.onPrimary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          height: 1.25,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -113,33 +99,27 @@ class App3DCard extends StatefulWidget {
 class _App3DCardState extends State<App3DCard> {
   bool _pressed = false;
 
-  void _setPressed(bool value) {
-    if (_pressed != value) setState(() => _pressed = value);
-  }
-
-  void _tap() {
-    if (widget.encouragement != null) {
-      AppFeedback.show(widget.encouragement!);
-    }
-    widget.onTap();
-  }
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final depth = _pressed ? 2.0 : 7.0;
 
+    void tap() {
+      if (widget.encouragement != null) AppFeedback.show(widget.encouragement!);
+      widget.onTap();
+    }
+
     return Semantics(
       button: true,
       child: GestureDetector(
-        onTap: _tap,
-        onTapDown: (_) => _setPressed(true),
-        onTapUp: (_) => _setPressed(false),
-        onTapCancel: () => _setPressed(false),
+        onTap: tap,
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOut,
-          transform: Matrix4.translationValues(0, _pressed ? 5 : 0, 0),
+          transform: Matrix4.identity()..translate(0.0, _pressed ? 5.0 : 0.0),
           decoration: BoxDecoration(
             borderRadius: widget.borderRadius,
             boxShadow: [
