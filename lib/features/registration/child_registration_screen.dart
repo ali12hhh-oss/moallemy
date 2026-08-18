@@ -71,14 +71,12 @@ class _ChildRegistrationScreenState extends State<ChildRegistrationScreen> {
         title: Text(s.$2),
         onChanged: (v) {
           if (v != null) {
-            setState(() {
-              stageId = v;
-            });
+            setState(() => stageId = v);
           }
         },
       ),
     ),
     const SizedBox(height: 18), FilledButton.icon(onPressed: saving ? null : _save, icon: const Icon(Icons.save_rounded), label: Text(saving ? 'جارٍ الحفظ...' : 'حفظ والبدء 🚀')),
-  ]));
+  ])));
   @override void dispose() { name.dispose(); super.dispose(); }
 }
