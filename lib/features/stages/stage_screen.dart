@@ -44,7 +44,7 @@ class StageScreen extends StatelessWidget {
       add('الكتابة','الحروف والأرقام على الشاشة', '✏️', WritingScreen(stageId: stageId));
       add('الألعاب والقصص','تعلم باللعب والاستماع', '🎮', const GamesScreenV11());
     } else {
-      add('العربية','منهج العربية المناسب للمرحلة', '📚', const ArabicCurriculumScreenV16(grade: grade));
+      add('العربية','منهج العربية المناسب للمرحلة', '📚', ArabicCurriculumScreenV16(grade: grade));
       if (grade >= 2) add('قواعد اللغة العربية','مفرد ومثنى والجمع والـ التعريف وحروف الجر وغيرها', '📝', const ArabicGrammarScreenV12());
       add('الرياضيات','جمع وطرح وترتيب وقيمة مكانية ومهارات أخرى', '🧮', MathCurriculumScreenV15(grade: grade));
       if (grade >= 1) add('جدول الضرب','حسب المرحلة: ١–٢ ثم ١–٥ ثم ١–١٠', '✖️', const MultiplicationScreenV13());
