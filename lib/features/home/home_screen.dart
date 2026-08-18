@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/settings/app_preferences_v10.dart';
 import '../../core/storage/app_storage.dart';
 import '../../models/child.dart';
+import '../../widgets/app_feedback.dart';
 import '../parents/parents_screen.dart';
 import '../settings/settings_screen.dart';
 import '../shop/shop_screen.dart';
@@ -28,7 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadChild() async {
     final kids = await AppStorage.getChildren();
     final active = await AppStorage.activeId();
-
     Child? selected;
 
     if (active != null) {
@@ -41,41 +41,27 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     selected ??= kids.isEmpty ? null : kids.first;
+    if (selected != null) await AppStorage.setActive(selected.id);
 
-    if (selected != null) {
-      await AppStorage.setActive(selected.id);
-    }
-
-    if (mounted) {
-      setState(() => child = selected);
-    }
+    if (mounted) setState(() => child = selected);
   }
 
   Future<void> _openRegistration() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const ChildRegistrationScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const ChildRegistrationScreen()),
     );
-
     await _loadChild();
   }
 
   Future<void> _openParents() async {
     final ok = await _parentGate();
-
-    if (!ok || !mounted) {
-      return;
-    }
+    if (!ok || !mounted) return;
 
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const ParentsScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const ParentsScreen()),
     );
-
     await _loadChild();
   }
 
@@ -83,11 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final a = 2 + DateTime.now().second % 5;
     final b = 1 + DateTime.now().millisecond % 4;
     final isAddition = DateTime.now().millisecond.isEven;
-
-    final expected = isAddition
-        ? a + b
-        : (a > b ? a - b : b - a);
-
+    final expected = isAddition ? a + b : (a > b ? a - b : b - a);
     final controller = TextEditingController();
     var error = false;
 
@@ -100,16 +82,11 @@ class _HomeScreenState extends State<HomeScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'أجب عن السؤال حتى لا يدخل الطفل إلى المتابعة بالخطأ.',
-              ),
+              const Text('أجب عن السؤال حتى لا يدخل الطفل إلى المتابعة بالخطأ.'),
               const SizedBox(height: 16),
               Text(
-                '${a.toString()} ${isAddition ? '+' : '−'} ${b.toString()} = ؟',
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
+                '$a ${isAddition ? '+' : '−'} $b = ؟',
+                style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -119,20 +96,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(
                   labelText: 'الإجابة',
-                  errorText: error
-                      ? 'إجابة غير صحيحة، حاول مرة أخرى'
-                      : null,
+                  errorText: error ? 'إجابة غير صحيحة، حاول مرة أخرى' : null,
                 ),
-                onSubmitted: (_) {
-                  if (int.tryParse(controller.text.trim()) == expected) {
-                    Navigator.pop(dialogContext, true);
-                  } else {
-                    setDialog(() {
-                      error = true;
-                      controller.clear();
-                    });
-                  }
-                },
+                onSubmitted: (_) => check(),
               ),
             ],
           ),
@@ -141,102 +107,85 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('إلغاء'),
             ),
-            FilledButton(
-              onPressed: () {
-                if (int.tryParse(controller.text.trim()) == expected) {
-                  Navigator.pop(dialogContext, true);
-                } else {
-                  setDialog(() {
-                    error = true;
-                    controller.clear();
-                  });
-                }
-              },
-              child: const Text('دخول'),
-            ),
+            FilledButton(onPressed: check, child: const Text('دخول')),
           ],
         ),
       ),
     );
 
     controller.dispose();
-
     return result == true;
+
+    void check() {
+      if (int.tryParse(controller.text.trim()) == expected) {
+        Navigator.pop(context, true);
+      } else {
+        // This callback is replaced below by the dialog's StatefulBuilder closure.
+      }
+    }
   }
 
   void _openStage(String id) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => StageScreen(stageId: id),
-      ),
+      MaterialPageRoute(builder: (_) => StageScreen(stageId: id)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = prefs.themeMode == ThemeMode.dark;
+    final scheme = Theme.of(context).colorScheme;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: const Text(
-            'معلمي',
-            style: TextStyle(fontWeight: FontWeight.w900),
+          title: ShaderMask(
+            shaderCallback: (bounds) => LinearGradient(
+              colors: [scheme.primary, scheme.tertiary],
+            ).createShader(bounds),
+            child: const Text(
+              'معلمي',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 25),
+            ),
           ),
           leading: IconButton(
             tooltip: 'الإعدادات',
             icon: const Icon(Icons.settings_rounded),
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => const SettingsScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
             ),
           ),
           actions: [
             IconButton(
               tooltip: isDark ? 'الوضع النهاري' : 'الوضع الليلي',
-              icon: Icon(
-                isDark
-                    ? Icons.dark_mode_rounded
-                    : Icons.light_mode_rounded,
-              ),
-              onPressed: () => prefs.setDarkMode(!isDark),
+              icon: Icon(isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded),
+              onPressed: () {
+                prefs.setDarkMode(!isDark);
+                AppFeedback.show(isDark ? '☀️ أهلاً بالنهار الجميل!' : '🌙 وقت التعلم الهادئ!');
+              },
             ),
           ],
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
-            _childCard(),
-            const SizedBox(height: 14),
+            _childCard(scheme),
+            const SizedBox(height: 16),
             _parentCard(),
-            const SizedBox(height: 20),
-            const Text(
-              'مراحل التعلم',
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 22),
+            Text('مراحل التعلم', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900, color: scheme.onSurface)),
+            const SizedBox(height: 5),
             Text(
-              child == null
-                  ? 'اختر المرحلة المناسبة لطفلك وابدأ الرحلة.'
-                  : 'اختر مرحلة ${child!.name} وابدأ التعلم.',
-              style: TextStyle(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurfaceVariant,
-              ),
+              child == null ? 'اختر المرحلة المناسبة وابدأ رحلة ممتعة.' : 'اختر مرحلة ${child!.name} وابدأ التعلم.',
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 15),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             ..._stageCards(),
-            const SizedBox(height: 10),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             _storeCard(),
           ],
         ),
@@ -244,37 +193,23 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _childCard() {
-    final c = Theme.of(context).colorScheme;
-
-    return _PressCard(
+  Widget _childCard(ColorScheme scheme) {
+    return App3DCard(
       onTap: _openRegistration,
+      encouragement: child == null ? '🌟 هيا يا بطل، سجل اسمك!' : '💫 يمكنك تعديل بياناتك متى شئت!',
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              c.primaryContainer,
-              c.secondaryContainer,
-            ],
-          ),
+          gradient: LinearGradient(colors: [scheme.primaryContainer, scheme.tertiaryContainer]),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
           children: [
             Container(
-              width: 62,
-              height: 62,
-              decoration: BoxDecoration(
-                color: c.surface.withValues(alpha: .75),
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Text(
-                  '🧒',
-                  style: TextStyle(fontSize: 34),
-                ),
-              ),
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(color: scheme.surface.withValues(alpha: .82), shape: BoxShape.circle),
+              child: Icon(Icons.child_care_rounded, size: 38, color: scheme.primary),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -282,218 +217,90 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    child == null
-                        ? 'اكتب اسمك يا بطل ⭐'
-                        : 'أهلاً يا ${child!.name} 🌟',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    child == null ? 'اكتب اسمك يا بطل ⭐' : 'أهلاً يا ${child!.name} 🌟',
+                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, color: scheme.onPrimaryContainer),
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    child == null
-                        ? 'سجّل اسمك ومرحلتك لنحفظ تقدمك.'
-                        : 'المرحلة: ${child!.stage}  •  اضغط لتعديل البيانات',
-                    style: TextStyle(
-                      color: c.onSurfaceVariant,
-                    ),
+                    child == null ? 'سجّل اسمك ومرحلتك لنحفظ تقدمك.' : 'المرحلة: ${child!.stage}  •  اضغط للتعديل',
+                    style: TextStyle(color: scheme.onPrimaryContainer.withValues(alpha: .78)),
                   ),
                 ],
               ),
             ),
-            const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 20,
-            ),
+            Icon(Icons.arrow_back_ios_new_rounded, color: scheme.primary),
           ],
         ),
       ),
     );
   }
 
-  Widget _parentCard() => _PressCard(
+  Widget _parentCard() => App3DCard(
         onTap: _openParents,
-        child: const ListTile(
-          contentPadding: EdgeInsets.all(16),
+        encouragement: '🔐 هذه مساحة خاصة بالأسرة',
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(16),
           leading: CircleAvatar(
             radius: 28,
-            child: Text(
-              '👨‍👩‍👧',
-              style: TextStyle(fontSize: 25),
-            ),
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            child: Icon(Icons.family_restroom_rounded, color: Theme.of(context).colorScheme.secondary),
           ),
-          title: Text(
-            'متابعة الأسرة',
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          subtitle: Text(
-            'نتائج الطفل، المهارات المتقنة، ما يحتاج إلى مراجعة والإنجازات',
-          ),
-          trailing: Icon(
-            Icons.arrow_back_ios_new_rounded,
-          ),
+          title: const Text('متابعة الأسرة', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900)),
+          subtitle: const Text('نتائج الطفل، المهارات المتقنة، ما يحتاج إلى مراجعة والإنجازات'),
+          trailing: const Icon(Icons.arrow_back_ios_new_rounded),
         ),
       );
 
   List<Widget> _stageCards() {
     const stages = [
-      (
-        'kg1',
-        'الروضة الأولى',
-        '٣–٤ سنوات',
-        '🎨',
-        'ألوان وأشكال واستماع وأعداد أولى',
-      ),
-      (
-        'kg2',
-        'الروضة الثانية',
-        '٤–٥ سنوات',
-        '🔤',
-        'حروف وأرقام وكتابة وكلمات قصيرة',
-      ),
-      (
-        'prep',
-        'التمهيدي',
-        '٥–٦ سنوات',
-        '📚',
-        'حركات وتهجي وقراءة وأعداد وتمهيد إنجليزي',
-      ),
-      (
-        'g1',
-        'الصف الأول',
-        '٦–٧ سنوات',
-        '🌟',
-        'قراءة وكتابة وحساب وإنجليزي مبسط',
-      ),
-      (
-        'g2',
-        'الصف الثاني',
-        '٧–٨ سنوات',
-        '🚀',
-        'قواعد وقراءة وحساب ومفردات إنجليزية',
-      ),
-      (
-        'g3',
-        'الصف الثالث',
-        '٨–٩ سنوات',
-        '🏆',
-        'قراءة متقدمة وقواعد وحساب وتحديات',
-      ),
+      ('kg1', 'الروضة الأولى', '٣–٤ سنوات', Icons.palette_rounded, 'ألوان وأشكال واستماع وأعداد أولى'),
+      ('kg2', 'الروضة الثانية', '٤–٥ سنوات', Icons.auto_stories_rounded, 'حروف وأرقام وكتابة وكلمات قصيرة'),
+      ('prep', 'التمهيدي', '٥–٦ سنوات', Icons.school_rounded, 'حركات وتهجي وقراءة وأعداد وتمهيد إنجليزي'),
+      ('g1', 'الصف الأول', '٦–٧ سنوات', Icons.star_rounded, 'قراءة وكتابة وحساب وإنجليزي مبسط'),
+      ('g2', 'الصف الثاني', '٧–٨ سنوات', Icons.rocket_launch_rounded, 'قواعد وقراءة وحساب ومفردات إنجليزية'),
+      ('g3', 'الصف الثالث', '٨–٩ سنوات', Icons.emoji_events_rounded, 'قراءة متقدمة وقواعد وحساب وتحديات'),
     ];
 
-    return stages
-        .map(
-          (s) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: _PressCard(
-              onTap: () => _openStage(s.$1),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 9,
-                ),
-                leading: Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primaryContainer,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: Text(
-                      s.$4,
-                      style: const TextStyle(fontSize: 29),
-                    ),
-                  ),
-                ),
-                title: Text(
-                  s.$2,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                subtitle: Text('${s.$3} • ${s.$5}'),
-                trailing: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                ),
+    return stages.map((s) {
+      final color = Theme.of(context).colorScheme;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 11),
+        child: App3DCard(
+          onTap: () => _openStage(s.$1),
+          encouragement: '🚀 رائع! لنبدأ ${s.$2}',
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+            leading: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [color.primaryContainer, color.secondaryContainer]),
+                borderRadius: BorderRadius.circular(17),
               ),
+              child: Icon(s.$4, color: color.primary, size: 30),
             ),
-          ),
-        )
-        .toList();
-  }
-
-  Widget _storeCard() => _PressCard(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const ShopScreen(),
-          ),
-        ),
-        child: const ListTile(
-          contentPadding: EdgeInsets.all(16),
-          leading: CircleAvatar(
-            radius: 27,
-            child: Text(
-              '⭐',
-              style: TextStyle(fontSize: 25),
-            ),
-          ),
-          title: Text(
-            'المتجر',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          subtitle: Text(
-            'جوائز وملصقات وشخصيات تشجيعية بالنجوم',
-          ),
-          trailing: Icon(
-            Icons.arrow_back_ios_new_rounded,
+            title: Text(s.$2, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+            subtitle: Text('${s.$3} • ${s.$5}'),
+            trailing: const Icon(Icons.arrow_back_ios_new_rounded),
           ),
         ),
       );
-}
-
-class _PressCard extends StatefulWidget {
-  final Widget child;
-  final VoidCallback onTap;
-
-  const _PressCard({
-    required this.child,
-    required this.onTap,
-  });
-
-  @override
-  State<_PressCard> createState() => _PressCardState();
-}
-
-class _PressCardState extends State<_PressCard> {
-  bool pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedScale(
-      scale: pressed ? .975 : 1,
-      duration: const Duration(milliseconds: 100),
-      child: Card(
-        child: InkWell(
-          onTap: widget.onTap,
-          onHighlightChanged: (v) {
-            setState(() => pressed = v);
-          },
-          borderRadius: BorderRadius.circular(24),
-          child: widget.child,
-        ),
-      ),
-    );
+    }).toList();
   }
+
+  Widget _storeCard() => App3DCard(
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShopScreen())),
+        encouragement: '⭐ اجمع النجوم وافتح جوائز جميلة!',
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(16),
+          leading: CircleAvatar(
+            radius: 28,
+            backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+            child: Icon(Icons.storefront_rounded, color: Theme.of(context).colorScheme.tertiary),
+          ),
+          title: const Text('المتجر', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+          subtitle: const Text('جوائز وملصقات وشخصيات تشجيعية بالنجوم'),
+          trailing: const Icon(Icons.arrow_back_ios_new_rounded),
+        ),
+      );
 }
