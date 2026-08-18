@@ -175,8 +175,10 @@ class MathPracticeEngineV15 {
     while (values.length < 4) {
       values.add(_random.nextInt(upper) + 1);
     }
-    final sorted = values.toList()..sort();
-    if (!ascending) sorted.reverse();
+    var sorted = values.toList()..sort();
+    if (!ascending) {
+  sorted = sorted.reversed.toList();
+}
     final correctText = sorted.map(ar).join(' ، ');
     final permutations = <List<int>>[
       sorted,
