@@ -31,10 +31,7 @@ class AppFeedbackOverlay extends StatelessWidget {
               tween: Tween(begin: .82, end: 1),
               duration: const Duration(milliseconds: 260),
               curve: Curves.easeOutBack,
-              builder: (context, scale, child) => Transform.scale(
-                scale: scale,
-                child: child,
-              ),
+              builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 330),
                 margin: const EdgeInsets.symmetric(horizontal: 28),
@@ -116,27 +113,29 @@ class _App3DCardState extends State<App3DCard> {
         onTapDown: (_) => setState(() => _pressed = true),
         onTapUp: (_) => setState(() => _pressed = false),
         onTapCancel: () => setState(() => _pressed = false),
-        child: AnimatedContainer(
+        child: AnimatedSlide(
+          offset: Offset(0, _pressed ? .018 : 0),
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOut,
-          transform: Matrix4.identity()..translate(0.0, _pressed ? 5.0 : 0.0),
-          decoration: BoxDecoration(
-            borderRadius: widget.borderRadius,
-            boxShadow: [
-              BoxShadow(
-                color: scheme.shadow.withValues(alpha: .20),
-                blurRadius: depth + 3,
-                offset: Offset(0, depth),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Theme.of(context).cardColor,
-            elevation: _pressed ? 1 : 3,
-            shadowColor: scheme.shadow.withValues(alpha: .25),
-            shape: RoundedRectangleBorder(borderRadius: widget.borderRadius),
-            clipBehavior: Clip.antiAlias,
-            child: widget.child,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: widget.borderRadius,
+              boxShadow: [
+                BoxShadow(
+                  color: scheme.shadow.withValues(alpha: .20),
+                  blurRadius: depth + 3,
+                  offset: Offset(0, depth),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Theme.of(context).cardColor,
+              elevation: _pressed ? 1 : 3,
+              shadowColor: scheme.shadow.withValues(alpha: .25),
+              shape: RoundedRectangleBorder(borderRadius: widget.borderRadius),
+              clipBehavior: Clip.antiAlias,
+              child: widget.child,
+            ),
           ),
         ),
       ),
