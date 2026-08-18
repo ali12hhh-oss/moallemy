@@ -46,16 +46,16 @@ class AppThemeV25 {
         elevation: dark ? 5 : 4,
         shadowColor: dark ? const Color(0xFF000000).withValues(alpha: .30) : violet.withValues(alpha: .16),
         surfaceTintColor: violet.withValues(alpha: .08),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
       ),
       iconTheme: IconThemeData(color: dark ? const Color(0xFFBDA9FF) : violet),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: dark ? const Color(0xFF303D5C) : Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide(color: violet, width: 2)),
+        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(18)), borderSide: BorderSide.none),
+        enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(18)), borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(borderRadius: const BorderRadius.all(Radius.circular(18)), borderSide: BorderSide(color: violet, width: 2)),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: ButtonStyle(
