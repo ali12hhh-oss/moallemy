@@ -44,8 +44,8 @@ class _AppRoot extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Stack(
       children: <Widget>[
-        const HomeScreen(),
-        const Positioned.fill(child: AppFeedbackOverlay()),
+        HomeScreen(),
+        Positioned.fill(child: AppFeedbackOverlay()),
       ],
     );
   }
