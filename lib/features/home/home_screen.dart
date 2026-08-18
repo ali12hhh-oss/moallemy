@@ -42,7 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     selected ??= kids.isEmpty ? null : kids.first;
     if (selected != null) await AppStorage.setActive(selected.id);
-
     if (mounted) setState(() => child = selected);
   }
 
@@ -77,52 +76,57 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialog) => AlertDialog(
-          title: const Text('منطقة الوالدين 🔒'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('أجب عن السؤال حتى لا يدخل الطفل إلى المتابعة بالخطأ.'),
-              const SizedBox(height: 16),
-              Text(
-                '$a ${isAddition ? '+' : '−'} $b = ؟',
-                style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  labelText: 'الإجابة',
-                  errorText: error ? 'إجابة غير صحيحة، حاول مرة أخرى' : null,
+        builder: (context, setDialog) {
+          void check() {
+            if (int.tryParse(controller.text.trim()) == expected) {
+              Navigator.pop(dialogContext, true);
+            } else {
+              setDialog(() {
+                error = true;
+                controller.clear();
+              });
+            }
+          }
+
+          return AlertDialog(
+            title: const Text('منطقة الوالدين 🔒'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('أجب عن السؤال حتى لا يدخل الطفل إلى المتابعة بالخطأ.'),
+                const SizedBox(height: 16),
+                Text(
+                  '$a ${isAddition ? '+' : '−'} $b = ؟',
+                  style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
-                onSubmitted: (_) => check(),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('إلغاء'),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  decoration: InputDecoration(
+                    labelText: 'الإجابة',
+                    errorText: error ? 'إجابة غير صحيحة، حاول مرة أخرى' : null,
+                  ),
+                  onSubmitted: (_) => check(),
+                ),
+              ],
             ),
-            FilledButton(onPressed: check, child: const Text('دخول')),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('إلغاء'),
+              ),
+              FilledButton(onPressed: check, child: const Text('دخول')),
+            ],
+          );
+        },
       ),
     );
 
     controller.dispose();
     return result == true;
-
-    void check() {
-      if (int.tryParse(controller.text.trim()) == expected) {
-        Navigator.pop(context, true);
-      } else {
-        // This callback is replaced below by the dialog's StatefulBuilder closure.
-      }
-    }
   }
 
   void _openStage(String id) {
@@ -177,7 +181,10 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             _parentCard(),
             const SizedBox(height: 22),
-            Text('مراحل التعلم', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900, color: scheme.onSurface)),
+            Text(
+              'مراحل التعلم',
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900, color: scheme.onSurface),
+            ),
             const SizedBox(height: 5),
             Text(
               child == null ? 'اختر المرحلة المناسبة وابدأ رحلة ممتعة.' : 'اختر مرحلة ${child!.name} وابدأ التعلم.',
