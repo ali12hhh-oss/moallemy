@@ -15,12 +15,12 @@ class KindergartenStageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = advanced ? 'الروضة الثانية' : 'الروضة الأولى';
     final sections = <_Section>[
-      _Section('الحروف', 'تعلم الحروف العربية مع الصوت والاسم والكلمة', Icons.abc_rounded, const Color(0xFF8E5CF6)),
+      const _Section('الحروف', 'تعلم الحروف العربية مع الصوت والاسم والكلمة', Icons.abc_rounded, Color(0xFF8E5CF6)),
       _Section('الأرقام', advanced ? 'الأرقام من ١ إلى ٥٠ مع النطق' : 'الأرقام من ١ إلى ١٠ مع النطق', Icons.pin_rounded, const Color(0xFF18A7E8)),
-      _Section('الكتابة', 'تدريب على كتابة الحروف والأرقام', Icons.draw_rounded, const Color(0xFF16B878)),
-      _Section('الألوان', 'تعرف إلى الألوان من خلال أنشطة ممتعة', Icons.palette_rounded, const Color(0xFFFF8A3D)),
-      _Section('الأشكال', 'تعلم الأشكال الأساسية مع النطق', Icons.category_rounded, const Color(0xFFE94F9B)),
-      _Section('الألعاب', 'أنشطة تعليمية بسيطة وممتعة', Icons.sports_esports_rounded, const Color(0xFFFFC107)),
+      const _Section('الكتابة', 'تدريب على كتابة الحروف والأرقام', Icons.draw_rounded, Color(0xFF16B878)),
+      const _Section('الألوان', 'تعرف إلى الألوان من خلال أنشطة ممتعة', Icons.palette_rounded, Color(0xFFFF8A3D)),
+      const _Section('الأشكال', 'تعلم الأشكال الأساسية مع النطق', Icons.category_rounded, Color(0xFFE94F9B)),
+      const _Section('الألعاب', 'أنشطة تعليمية بسيطة وممتعة', Icons.sports_esports_rounded, Color(0xFFFFC107)),
     ];
     return Directionality(
       textDirection: TextDirection.rtl,
