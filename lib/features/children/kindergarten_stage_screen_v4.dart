@@ -417,7 +417,9 @@ class _DrawingPainter extends CustomPainter {
         canvas.drawLine(points[i - 1], points[i], paint);
       }
     }
-    for (final stroke in strokes) drawStroke(stroke);
+    for (final for (final stroke in strokes) {
+  drawStroke(stroke);
+}
     drawStroke(current);
   }
 
