@@ -55,7 +55,10 @@ class AppThemeV25 {
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(18)), borderSide: BorderSide.none),
         enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(18)), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: const BorderRadius.all(Radius.circular(18)), borderSide: BorderSide(color: violet, width: 2)),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(18)),
+          borderSide: BorderSide(color: violet, width: 2),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: ButtonStyle(
@@ -64,7 +67,7 @@ class AppThemeV25 {
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(18))),
           elevation: const WidgetStatePropertyAll(5),
           shadowColor: WidgetStatePropertyAll(violet.withValues(alpha: .34)),
-          backgroundColor: WidgetStatePropertyAll(violet),
+          backgroundColor: const WidgetStatePropertyAll(violet),
           foregroundColor: const WidgetStatePropertyAll(Colors.white),
           textStyle: const WidgetStatePropertyAll(TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
         ),
