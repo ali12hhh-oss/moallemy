@@ -404,7 +404,7 @@ const Map<String, List<String>> _forms = {
   'ت': ['تـ', 'ـتـ', 'ـت'],
   'ث': ['ثـ', 'ـثـ', 'ـث'],
   'ج': ['جـ', 'ـجـ', 'ـج'],
-  'ح': ['حـ', 'ـحـ', 'ـح'],
+  'ح': ['حـ', 'ـحـ', 'ح'],
   'خ': ['خـ', 'ـخـ', 'ـخ'],
   'د': ['د', 'د', 'د'],
   'ذ': ['ذ', 'ذ', 'ذ'],
@@ -851,12 +851,14 @@ class _WritingBoard extends StatefulWidget {
 }
 
 class _WritingBoardState extends State<_WritingBoard> {
-  final List<List<Offset>> strokes = [];
+  final List<List<Offset>> strokes = []; // ✅ تم التصحيح
   List<Offset> current = [];
 
-  void clear() => setState(() {
-        strokes.clear();
-      });
+  void clear() {
+    setState(() {
+      strokes.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) => Column(
@@ -881,7 +883,7 @@ class _WritingBoardState extends State<_WritingBoard> {
               }),
               onPanEnd: (_) {
                 if (current.length > 1) {
-                  strokes.add(List.of(current));
+                  strokes.add(List.of(current)); // ✅ صحيح
                 }
                 current = [];
                 setState(() {});
@@ -936,7 +938,8 @@ class _WritingBoardState extends State<_WritingBoard> {
 class _BoardPainter extends CustomPainter {
   final String guide;
   final Color color;
-  final List<List<Offset>> strokes, current;
+  final List<List<Offset>> strokes;
+  final List<Offset> current;
   _BoardPainter(this.guide, this.color, this.strokes, this.current);
   @override
   void paint(Canvas c, Size s) {
@@ -1063,7 +1066,7 @@ class _ColorDrawPage extends StatefulWidget {
 }
 
 class _ColorDrawPageState extends State<_ColorDrawPage> {
-  final List<List<Offset>> strokes = [];
+  final List<List<Offset>> strokes = []; // ✅ تم التصحيح
   List<Offset> current = [];
 
   @override
@@ -1091,7 +1094,7 @@ class _ColorDrawPageState extends State<_ColorDrawPage> {
               }),
               onPanEnd: (_) {
                 if (current.length > 1) {
-                  strokes.add(List.of(current));
+                  strokes.add(List.of(current)); // ✅ صحيح
                 }
                 current = [];
                 setState(() {});
@@ -1106,7 +1109,11 @@ class _ColorDrawPageState extends State<_ColorDrawPage> {
           _Button('🔊 انطق اللون', widget.lesson.color,
               () => VoiceService.arabic(widget.lesson.name)),
           TextButton.icon(
-            onPressed: () => setState(() => strokes.clear()),
+            onPressed: () {
+              setState(() {
+                strokes.clear();
+              });
+            },
             icon: const Icon(Icons.delete_outline),
             label: const Text('مسح الرسم'),
           )
@@ -1117,7 +1124,8 @@ class _ColorDrawPageState extends State<_ColorDrawPage> {
 class _AnimalPainter extends CustomPainter {
   final String emoji;
   final Color color;
-  final List<List<Offset>> strokes, current;
+  final List<List<Offset>> strokes;
+  final List<Offset> current;
   _AnimalPainter(this.emoji, this.color, this.strokes, this.current);
   @override
   void paint(Canvas c, Size s) {
