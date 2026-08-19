@@ -6,7 +6,7 @@ import '../english/english_home_screen.dart';
 import '../math/math_curriculum_screen_v15.dart';
 import '../math/multiplication_screen_v13.dart';
 import '../writing/writing_screen.dart';
-import '../children/kindergarten_stage_screen.dart';
+import '../children/kindergarten_stage_screen_v3.dart';
 import '../games/games_screen_v11.dart';
 
 class StageScreen extends StatelessWidget {
@@ -16,7 +16,7 @@ class StageScreen extends StatelessWidget {
   void open(BuildContext context, Widget page, String message) { AppFeedback.show(message); Navigator.push(context, MaterialPageRoute<void>(builder: (_) => page)); }
   @override Widget build(BuildContext context) {
     final d=data[stageId]!;
-    if(stageId=='kg1'||stageId=='kg2') return KindergartenStageScreen(stageId:stageId);
+    if(stageId=='kg1'||stageId=='kg2') return KindergartenStageScreenV3(stageId:stageId);
     if(stageId=='prep') return const KindergartenTestsScreen();
     final grade=switch(stageId){'g1'=>1,'g2'=>2,'g3'=>3,_=>1};
     final cards=<Widget>[];
