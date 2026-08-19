@@ -1,4 +1,5 @@
 name: Flutter Android CI
+# CI build is intentionally kept active so every main-branch change is analyzed, tested, and built.
 
 on:
   push:
