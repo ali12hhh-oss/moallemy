@@ -410,17 +410,26 @@ class _DrawingPainter extends CustomPainter {
   _DrawingPainter(this.color, this.strokes, this.current);
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..strokeWidth = 11..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round;
-    void drawStroke(List<Offset> points) {
-      for (var i = 1; i < points.length; i++) {
-        canvas.drawLine(points[i - 1], points[i], paint);
-      }
+  @override
+void paint(Canvas canvas, Size size) {
+  final paint = Paint()
+    ..color = color
+    ..strokeWidth = 11
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round;
+
+  void drawStroke(List<Offset> points) {
+    for (var i = 1; i < points.length; i++) {
+      canvas.drawLine(points[i - 1], points[i], paint);
     }
-    for (final for (final stroke in strokes) {
-  drawStroke(stroke);
+  }
+
+  for (final stroke in strokes) {
+    drawStroke(stroke);
+  }
+
+  drawStroke(current);
 }
-    drawStroke(current);
   }
 
   @override
