@@ -1,0 +1,59 @@
+name: Fix vertical drawing input
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, 'Fix vertical drawing input') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Replace pan gesture with pointer listener
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('lib/features/children/kindergarten_stage_screen.dart')
+          text = path.read_text(encoding='utf-8')
+
+          pattern = re.compile(
+              r'''child: GestureDetector\(\n'''
+              r'''\s*onPanStart: \(d\) => setState\(\(\) => current = \[d\.localPosition\]\),\n'''
+              r'''\s*onPanUpdate: \(d\) => setState\(\(\) \{\n'''
+              r'''\s*current = \[\.\.\.current, d\.localPosition\];\n'''
+              r'''\s*\}\),\n'''
+              r'''\s*onPanEnd: \(_\) \{\n'''
+              r'''\s*if \(current\.length > 1\) \{\n'''
+              r'''\s*strokes\.add\(List\.of\(current\)\);[^\n]*\n'''
+              r'''\s*\}\n'''
+              r'''\s*current = \[\];\n'''
+              r'''\s*setState\(\(\) \{\}\);\n'''
+              r'''\s*\},\n'''
+              r'''\s*child: CustomPaint\(''',
+              re.MULTILINE,
+          )
+
+          replacement = '''child: Listener(\n              behavior: HitTestBehavior.opaque,\n              onPointerDown: (event) {\n                setState(() => current = [event.localPosition]);\n              },\n              onPointerMove: (event) {\n                setState(() => current = [...current, event.localPosition]);\n              },\n              onPointerUp: (_) {\n                if (current.length > 1) {\n                  strokes.add(List.of(current));\n                }\n                current = [];\n                setState(() {});\n              },\n              onPointerCancel: (_) {\n                current = [];\n                setState(() {});\n              },\n              child: CustomPaint('''
+
+          text, count = pattern.subn(replacement, text)
+          if count != 2:
+              raise SystemExit(f'Expected 2 drawing boards, replaced {count}')
+
+          path.write_text(text, encoding='utf-8')
+          print(f'Updated {count} drawing boards')
+          PY
+
+      - name: Commit fix and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/features/children/kindergarten_stage_screen.dart .github/workflows/fix-vertical-drawing.yml
+          git commit -m "Fix vertical drawing input [skip ci]"
+          git push
