@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Replace pan gesture with pointer listener
+      - name: Replace pan gesture with eager pointer listener
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -22,6 +22,13 @@ jobs:
 
           path = Path('lib/features/children/kindergarten_stage_screen.dart')
           text = path.read_text(encoding='utf-8')
+
+          if "import 'package:flutter/gestures.dart';" not in text:
+              text = text.replace(
+                  "import 'package:flutter/material.dart';",
+                  "import 'package:flutter/material.dart';\nimport 'package:flutter/gestures.dart';",
+                  1,
+              )
 
           pattern = re.compile(
               r'''child: GestureDetector\(\n'''
@@ -40,7 +47,7 @@ jobs:
               re.MULTILINE,
           )
 
-          replacement = '''child: Listener(\n              behavior: HitTestBehavior.opaque,\n              onPointerDown: (event) {\n                setState(() => current = [event.localPosition]);\n              },\n              onPointerMove: (event) {\n                setState(() => current = [...current, event.localPosition]);\n              },\n              onPointerUp: (_) {\n                if (current.length > 1) {\n                  strokes.add(List.of(current));\n                }\n                current = [];\n                setState(() {});\n              },\n              onPointerCancel: (_) {\n                current = [];\n                setState(() {});\n              },\n              child: CustomPaint('''
+          replacement = '''child: RawGestureDetector(\n              gestures: <Type, GestureRecognizerFactory>{\n                EagerGestureRecognizer: GestureRecognizerFactoryWithHandlers<EagerGestureRecognizer>(\n                  EagerGestureRecognizer.new,\n                  (_) {},\n                ),\n              },\n              behavior: HitTestBehavior.opaque,\n              child: Listener(\n                behavior: HitTestBehavior.opaque,\n                onPointerDown: (event) {\n                  setState(() => current = [event.localPosition]);\n                },\n                onPointerMove: (event) {\n                  if (current.isNotEmpty) {\n                    setState(() => current.add(event.localPosition));\n                  }\n                },\n                onPointerUp: (_) {\n                  if (current.length > 1) {\n                    strokes.add(List.of(current));\n                  }\n                  current = [];\n                  setState(() {});\n                },\n                onPointerCancel: (_) {\n                  current = [];\n                  setState(() {});\n                },\n                child: CustomPaint('''
 
           text, count = pattern.subn(replacement, text)
           if count != 2:
@@ -54,6 +61,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/features/children/kindergarten_stage_screen.dart .github/workflows/fix-vertical-drawing.yml
+          git add lib/features/children/kindergarten_stage_screen.dart
           git commit -m "Fix vertical drawing input [skip ci]"
+          git push
+          git rm -f .github/workflows/fix-vertical-drawing.yml
+          git commit -m "Remove temporary drawing fix workflow [skip ci]"
           git push
