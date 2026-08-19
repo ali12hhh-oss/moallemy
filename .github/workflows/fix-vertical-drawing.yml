@@ -9,61 +9,71 @@ permissions:
 
 jobs:
   fix:
-    if: ${{ !contains(github.event.head_commit.message, 'Fix vertical drawing input') }}
+    if: ${{ !contains(github.event.head_commit.message, 'Fix drawing painter') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Replace pan gesture with eager pointer listener
+      - name: Fix malformed drawing painter in v4
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
 
-          path = Path('lib/features/children/kindergarten_stage_screen.dart')
+          path = Path('lib/features/children/kindergarten_stage_screen_v4.dart')
           text = path.read_text(encoding='utf-8')
 
-          if "import 'package:flutter/gestures.dart';" not in text:
-              text = text.replace(
-                  "import 'package:flutter/material.dart';",
-                  "import 'package:flutter/material.dart';\nimport 'package:flutter/gestures.dart';",
-                  1,
-              )
-
           pattern = re.compile(
-              r'''child: GestureDetector\(\n'''
-              r'''\s*onPanStart: \(d\) => setState\(\(\) => current = \[d\.localPosition\]\),\n'''
-              r'''\s*onPanUpdate: \(d\) => setState\(\(\) \{\n'''
-              r'''\s*current = \[\.\.\.current, d\.localPosition\];\n'''
-              r'''\s*\}\),\n'''
-              r'''\s*onPanEnd: \(_\) \{\n'''
-              r'''\s*if \(current\.length > 1\) \{\n'''
-              r'''\s*strokes\.add\(List\.of\(current\)\);[^\n]*\n'''
-              r'''\s*\}\n'''
-              r'''\s*current = \[\];\n'''
-              r'''\s*setState\(\(\) \{\}\);\n'''
-              r'''\s*\},\n'''
-              r'''\s*child: CustomPaint\(''',
-              re.MULTILINE,
+              r'class _DrawingPainter extends CustomPainter \{.*?'
+              r'@override\s+bool shouldRepaint\(covariant _DrawingPainter oldDelegate\) => true;\s*\n\}',
+              re.DOTALL,
           )
 
-          replacement = '''child: RawGestureDetector(\n              gestures: <Type, GestureRecognizerFactory>{\n                EagerGestureRecognizer: GestureRecognizerFactoryWithHandlers<EagerGestureRecognizer>(\n                  EagerGestureRecognizer.new,\n                  (_) {},\n                ),\n              },\n              behavior: HitTestBehavior.opaque,\n              child: Listener(\n                behavior: HitTestBehavior.opaque,\n                onPointerDown: (event) {\n                  setState(() => current = [event.localPosition]);\n                },\n                onPointerMove: (event) {\n                  if (current.isNotEmpty) {\n                    setState(() => current.add(event.localPosition));\n                  }\n                },\n                onPointerUp: (_) {\n                  if (current.length > 1) {\n                    strokes.add(List.of(current));\n                  }\n                  current = [];\n                  setState(() {});\n                },\n                onPointerCancel: (_) {\n                  current = [];\n                  setState(() {});\n                },\n                child: CustomPaint('''
+          replacement = '''class _DrawingPainter extends CustomPainter {
+            final Color color;
+            final List<List<Offset>> strokes;
+            final List<Offset> current;
 
-          text, count = pattern.subn(replacement, text)
-          if count != 2:
-              raise SystemExit(f'Expected 2 drawing boards, replaced {count}')
+            _DrawingPainter(this.color, this.strokes, this.current);
+
+            @override
+            void paint(Canvas canvas, Size size) {
+              final paint = Paint()
+                ..color = color
+                ..strokeWidth = 11
+                ..strokeCap = StrokeCap.round
+                ..strokeJoin = StrokeJoin.round;
+
+              void drawStroke(List<Offset> points) {
+                for (var i = 1; i < points.length; i++) {
+                  canvas.drawLine(points[i - 1], points[i], paint);
+                }
+              }
+
+              for (final stroke in strokes) {
+                drawStroke(stroke);
+              }
+
+              drawStroke(current);
+            }
+
+            @override
+            bool shouldRepaint(covariant _DrawingPainter oldDelegate) => true;
+          }'''
+
+          text, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected exactly 1 _DrawingPainter class, replaced {count}')
 
           path.write_text(text, encoding='utf-8')
-          print(f'Updated {count} drawing boards')
+          print('Fixed _DrawingPainter in kindergarten_stage_screen_v4.dart')
           PY
 
       - name: Commit fix and remove temporary workflow
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/features/children/kindergarten_stage_screen.dart
-          git commit -m "Fix vertical drawing input [skip ci]"
-          git push
+          git add lib/features/children/kindergarten_stage_screen_v4.dart
           git rm -f .github/workflows/fix-vertical-drawing.yml
-          git commit -m "Remove temporary drawing fix workflow [skip ci]"
+          git commit -m "Fix drawing painter"
           git push
