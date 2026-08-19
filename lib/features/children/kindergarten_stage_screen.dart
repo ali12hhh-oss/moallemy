@@ -876,15 +876,22 @@ class _WritingBoardState extends State<_WritingBoard> {
                     color: Color(0x22000000))
               ],
             ),
-            child: GestureDetector(
-              onPanStart: (d) => setState(() => current = [d.localPosition]),
-              onPanUpdate: (d) => setState(() {
-                current = [...current, d.localPosition];
-              }),
-              onPanEnd: (_) {
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              onPointerDown: (event) {
+                setState(() => current = [event.localPosition]);
+              },
+              onPointerMove: (event) {
+                setState(() => current = [...current, event.localPosition]);
+              },
+              onPointerUp: (_) {
                 if (current.length > 1) {
-                  strokes.add(List.of(current)); // ✅ صحيح
+                  strokes.add(List.of(current));
                 }
+                current = [];
+                setState(() {});
+              },
+              onPointerCancel: (_) {
                 current = [];
                 setState(() {});
               },
@@ -1087,15 +1094,22 @@ class _ColorDrawPageState extends State<_ColorDrawPage> {
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: widget.lesson.color, width: 4),
             ),
-            child: GestureDetector(
-              onPanStart: (d) => setState(() => current = [d.localPosition]),
-              onPanUpdate: (d) => setState(() {
-                current = [...current, d.localPosition];
-              }),
-              onPanEnd: (_) {
+            child: Listener(
+              behavior: HitTestBehavior.opaque,
+              onPointerDown: (event) {
+                setState(() => current = [event.localPosition]);
+              },
+              onPointerMove: (event) {
+                setState(() => current = [...current, event.localPosition]);
+              },
+              onPointerUp: (_) {
                 if (current.length > 1) {
-                  strokes.add(List.of(current)); // ✅ صحيح
+                  strokes.add(List.of(current));
                 }
+                current = [];
+                setState(() {});
+              },
+              onPointerCancel: (_) {
                 current = [];
                 setState(() {});
               },
