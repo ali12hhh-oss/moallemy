@@ -12,111 +12,38 @@ import '../games/games_screen_v11.dart';
 class StageScreen extends StatelessWidget {
   final String stageId;
   const StageScreen({super.key, required this.stageId});
-
-  static const Map<String, (String, String, String)> data = {
-    'kg1': ('الروضة الأولى', '٣–٤ سنوات', '🎨'),
-    'kg2': ('الروضة الثانية', '٤–٥ سنوات', '🔤'),
-    'prep': ('التمهيدي', '٥–٦ سنوات', '📚'),
-    'g1': ('الصف الأول', '٦–٧ سنوات', '🌟'),
-    'g2': ('الصف الثاني', '٧–٨ سنوات', '🚀'),
-    'g3': ('الصف الثالث', '٨–٩ سنوات', '🏆'),
-  };
-
-  void open(BuildContext context, Widget page, String message) {
-    AppFeedback.show(message);
-    Navigator.push(context, MaterialPageRoute<void>(builder: (_) => page));
+  static const Map<String, (String, String, String)> data = {'kg1': ('الروضة الأولى', '٣–٤ سنوات', '🎨'),'kg2': ('الروضة الثانية', '٤–٥ سنوات', '🔤'),'prep': ('اختبارات الروضة', 'مراجعة الروضة الأولى والثانية', '🏆'),'g1': ('الصف الأول', '٦–٧ سنوات', '🌟'),'g2': ('الصف الثاني', '٧–٨ سنوات', '🚀'),'g3': ('الصف الثالث', '٨–٩ سنوات', '🏆')};
+  void open(BuildContext context, Widget page, String message) { AppFeedback.show(message); Navigator.push(context, MaterialPageRoute<void>(builder: (_) => page)); }
+  @override Widget build(BuildContext context) {
+    final d=data[stageId]!;
+    if(stageId=='kg1'||stageId=='kg2') return KindergartenStageScreen(stageId:stageId);
+    if(stageId=='prep') return const KindergartenTestsScreen();
+    final grade=switch(stageId){'g1'=>1,'g2'=>2,'g3'=>3,_=>1};
+    final cards=<Widget>[];
+    void add(String title,String subtitle,IconData icon,Widget page,String message){cards.add(Padding(padding:const EdgeInsets.only(bottom:12),child:App3DCard(encouragement:message,onTap:()=>open(context,page,message),child:ListTile(contentPadding:const EdgeInsets.symmetric(horizontal:18,vertical:10),leading:_iconBox(context,icon),title:Text(title,style:const TextStyle(fontSize:19,fontWeight:FontWeight.w900)),subtitle:Text(subtitle),trailing:const Icon(Icons.arrow_back_ios_new_rounded)))));}
+    add('العربية','منهج العربية المناسب للمرحلة',Icons.menu_book_rounded,ArabicCurriculumScreenV16(grade:grade),'📚 خطوة جديدة في القراءة!');
+    if(grade>=2)add('قواعد اللغة العربية','مفرد ومثنى والجمع والـ التعريف وحروف الجر وغيرها',Icons.spellcheck_rounded,const ArabicGrammarScreenV12(),'📝 هيا نكتشف قواعد العربية!');
+    add('الرياضيات','جمع وطرح وترتيب وقيمة مكانية ومهارات أخرى',Icons.calculate_rounded,MathCurriculumScreenV15(grade:grade),'🧮 عقل رياضي رائع!');
+    add('جدول الضرب','حسب المرحلة',Icons.close_rounded,const MultiplicationScreenV13(),'✖️ لنصبح أبطال جدول الضرب!');
+    add('الإنجليزية','قراءة وكتابة وتعلم تدريجي مناسب للعمر',Icons.language_rounded,EnglishHomeScreen(stageId:stageId),'🇬🇧 Great!');
+    add('الكتابة','في الصفوف الأعلى نكتب كلمات وجملاً',Icons.edit_note_rounded,WritingScreen(stageId:stageId),'✍️ اكتب بنفسك!');
+    add('الألعاب والقصص','نشاطات وتحديات مرتبطة بالتعلم',Icons.sports_esports_rounded,const GamesScreenV11(),'🏆 تحدٍ جديد!');
+    return Directionality(textDirection:TextDirection.rtl,child:Scaffold(appBar:AppBar(title:Text(d.$1)),body:ListView(padding:const EdgeInsets.fromLTRB(16,8,16,32),children:[App3DCard(onTap:()=>AppFeedback.show('🌟 ${d.$1} — أنت تستطيع!'),child:Container(padding:const EdgeInsets.all(20),decoration:BoxDecoration(gradient:LinearGradient(colors:[Theme.of(context).colorScheme.primaryContainer,Theme.of(context).colorScheme.tertiaryContainer]),borderRadius:BorderRadius.circular(24)),child:Row(children:[Text(d.$3,style:const TextStyle(fontSize:45)),const SizedBox(width:14),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(d.$1,style:const TextStyle(fontSize:25,fontWeight:FontWeight.w900)),Text(d.$2),const SizedBox(height:6),const Text('اختر النشاط الذي تريد أن تتعلمه اليوم.')]))])),const SizedBox(height:20),const Text('مواد المرحلة',style:TextStyle(fontSize:23,fontWeight:FontWeight.w900)),const SizedBox(height:12),...cards])));
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final d = data[stageId]!;
-    final grade = switch (stageId) {
-      'g1' => 1,
-      'g2' => 2,
-      'g3' => 3,
-      _ => 1,
-    };
-
-    if (stageId == 'kg1' || stageId == 'kg2') {
-      return KindergartenStageScreen(stageId: stageId);
-    }
-
-    final cards = <Widget>[];
-    void add(String title, String subtitle, IconData icon, Widget page, String message) {
-      cards.add(Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: App3DCard(
-          encouragement: message,
-          onTap: () => open(context, page, message),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-            leading: _iconBox(context, icon),
-            title: Text(title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
-            subtitle: Text(subtitle),
-            trailing: const Icon(Icons.arrow_back_ios_new_rounded),
-          ),
-        ),
-      ));
-    }
-
-    if (stageId == 'prep') {
-      add('العربية', 'الحركات والتهجي والقراءة المبكرة', Icons.menu_book_rounded, const ArabicCurriculumScreenV16(grade: 1), '📚 هيا نتهجى ونقرأ!');
-      add('الرياضيات', 'الأعداد والجمع والطرح والمقارنة', Icons.calculate_rounded, const MathCurriculumScreenV15(grade: 1), '🧮 لنحل مسائل ذكية!');
-      add('الإنجليزية', 'حروف وأرقام وأصوات مع شرح عربي', Icons.language_rounded, EnglishHomeScreen(stageId: stageId), '🔤 Let’s learn English!');
-      add('الكتابة', 'الحروف والأرقام على الشاشة', Icons.draw_rounded, WritingScreen(stageId: stageId), '✏️ اكتب بنفسك على الشاشة!');
-      add('الألعاب والقصص', 'تعلم باللعب والاستماع', Icons.sports_esports_rounded, const GamesScreenV11(), '🎮 اللعب يجعل التعلم أجمل!');
-    } else {
-      add('العربية', 'منهج العربية المناسب للمرحلة', Icons.menu_book_rounded, ArabicCurriculumScreenV16(grade: grade), '📚 خطوة جديدة في القراءة!');
-      if (grade >= 2) {
-        add('قواعد اللغة العربية', 'مفرد ومثنى والجمع والـ التعريف وحروف الجر وغيرها', Icons.spellcheck_rounded, const ArabicGrammarScreenV12(), '📝 هيا نكتشف قواعد العربية!');
-      }
-      add('الرياضيات', 'جمع وطرح وترتيب وقيمة مكانية ومهارات أخرى', Icons.calculate_rounded, MathCurriculumScreenV15(grade: grade), '🧮 عقل رياضي رائع!');
-      add('جدول الضرب', 'حسب المرحلة: الأول ١–٢، الثاني ١–٥، الثالث ١–١٠', Icons.close_rounded, const MultiplicationScreenV13(), '✖️ لنصبح أبطال جدول الضرب!');
-      add('الإنجليزية', 'قراءة وكتابة وتعلم تدريجي مناسب للعمر', Icons.language_rounded, EnglishHomeScreen(stageId: stageId), '🇬🇧 Great! لنقرأ الإنجليزية بشكل صحيح!');
-      add('الكتابة', 'في الصفين الثاني والثالث نكتب كلمات وجملاً', Icons.edit_note_rounded, WritingScreen(stageId: stageId), '✍️ الآن اكتب كلماتك بنفسك!');
-      add('الألعاب والقصص', 'نشاطات وتحديات مرتبطة بالتعلم', Icons.sports_esports_rounded, const GamesScreenV11(), '🏆 تحدٍ جديد بانتظارك!');
-    }
-
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(title: Text(d.$1)),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-          children: [
-            App3DCard(
-              onTap: () => AppFeedback.show('🌟 ${d.$1} — أنت تستطيع!'),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [Theme.of(context).colorScheme.primaryContainer, Theme.of(context).colorScheme.tertiaryContainer]),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(children: [
-                  Text(d.$3, style: const TextStyle(fontSize: 45)), const SizedBox(width: 14),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(d.$1, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w900)),
-                    Text(d.$2), const SizedBox(height: 6), const Text('اختر النشاط الذي تريد أن تتعلمه اليوم.'),
-                  ])),
-                ]),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text('مواد المرحلة', style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900)),
-            const SizedBox(height: 12),
-            ...cards,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _iconBox(BuildContext context, IconData icon) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: 56, height: 56,
-      decoration: BoxDecoration(gradient: LinearGradient(colors: [scheme.primaryContainer, scheme.secondaryContainer]), borderRadius: BorderRadius.circular(17)),
-      child: Icon(icon, color: scheme.primary, size: 30),
-    );
-  }
+  Widget _iconBox(BuildContext context,IconData icon){final s=Theme.of(context).colorScheme;return Container(width:56,height:56,decoration:BoxDecoration(gradient:LinearGradient(colors:[s.primaryContainer,s.secondaryContainer]),borderRadius:BorderRadius.circular(17)),child:Icon(icon,color:s.primary,size:30));}
 }
+
+class KindergartenTestsScreen extends StatelessWidget {
+  const KindergartenTestsScreen({super.key});
+  @override Widget build(BuildContext context)=>Directionality(textDirection:TextDirection.rtl,child:Scaffold(appBar:AppBar(title:const Text('اختبارات الروضة')),body:ListView(padding:const EdgeInsets.all(16),children:[App3DCard(onTap:()=>AppFeedback.show('🏆 هيا نراجع ما تعلمناه!'),child:Container(padding:const EdgeInsets.all(22),decoration:const BoxDecoration(gradient:LinearGradient(colors:[Color(0xFF8E5CF6),Color(0xFF18A7E8),Color(0xFFE94F9B)]),borderRadius:BorderRadius.all(Radius.circular(26))),child:const Row(children:[Text('🏆',style:TextStyle(fontSize:48)),SizedBox(width:14),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('اختبارات الروضة',style:TextStyle(color:Colors.white,fontSize:26,fontWeight:FontWeight.w900)),Text('مراجعة ممتعة للروضة الأولى والثانية',style:TextStyle(color:Colors.white,fontSize:15))]))])),const SizedBox(height:18),_TestButton(title:'اختبار الحروف ودمج حرفين',subtitle:'الحروف العربية + دمج حرفين مثل د + و',icon:Icons.abc_rounded,colors:const[Color(0xFF8E5CF6),Color(0xFFE94F9B)],page:const _PrepLetterTest()),_TestButton(title:'اختبار الأرقام',subtitle:'١ إلى ٥٠ + الآحاد والعشرات',icon:Icons.pin_rounded,colors:const[Color(0xFF18A7E8),Color(0xFF16B878)],page:const _PrepNumberTest()),_TestButton(title:'اختبار الأشكال',subtitle:'تمييز الأشكال التي تعلمها الطفل',icon:Icons.category_rounded,colors:const[Color(0xFFFF8A3D),Color(0xFFE94F9B)],page:const _PrepShapeTest()),_TestButton(title:'اختبار الألوان',subtitle:'التعرف على اللون واسمه',icon:Icons.palette_rounded,colors:const[Color(0xFFFFC107),Color(0xFFFF8A3D)],page:const _PrepColorTest())])));
+}
+class _TestButton extends StatelessWidget{final String title,subtitle;final IconData icon;final List<Color> colors;final Widget page;const _TestButton({required this.title,required this.subtitle,required this.icon,required this.colors,required this.page});@override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.only(bottom:12),child:App3DCard(encouragement:'✨ هيا نبدأ الاختبار!',onTap:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>page)),child:Container(padding:const EdgeInsets.all(17),decoration:BoxDecoration(gradient:LinearGradient(colors:colors),borderRadius:BorderRadius.circular(22)),child:Row(children:[Icon(icon,color:Colors.white,size:40),const SizedBox(width:13),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:const TextStyle(color:Colors.white,fontSize:20,fontWeight:FontWeight.w900)),Text(subtitle,style:const TextStyle(color:Colors.white,fontWeight:FontWeight.w600))])),const Icon(Icons.arrow_back_ios_new_rounded,color:Colors.white)]))));}
+class _PrepLetterTest extends StatefulWidget{const _PrepLetterTest();@override State<_PrepLetterTest> createState()=>_PrepLetterTestState();}
+class _PrepLetterTestState extends State<_PrepLetterTest>{int i=0;final qs=const[('اختر الحرف: ب',['أ','ب','ت'],'ب'),('اختر الحرف: م',['ن','م','ل'],'م'),('ما نتيجة د + و؟',['دو','دا','دي'],'دو'),('ما نتيجة ن + ا؟',['نا','نو','ني'],'نا'),('ما نتيجة ب + ا؟',['با','بو','بي'],'با')];@override Widget build(BuildContext context){final q=qs[i%qs.length];return _QuestionPage(title:'اختبار الحروف',question:q.$1,choices:q.$2,correct:q.$3,onNext:()=>setState(()=>i++));}}
+class _PrepNumberTest extends StatefulWidget{const _PrepNumberTest();@override State<_PrepNumberTest> createState()=>_PrepNumberTestState();}
+class _PrepNumberTestState extends State<_PrepNumberTest>{int i=1;@override Widget build(BuildContext context){final t=i~/10,o=i%10;final q=i<10?'اختر الرقم ${i}':'في العدد ${i} اختر قيمة الرقم في خانة الآحاد أو العشرات';final c=i<10?['${i}','${i==9?1:i+1}','${i==1?3:i-1}']:['الآحاد: ${o}','العشرات: ${t}','العدد كاملًا'];final correct=i<10?'${i}':(o>0?'الآحاد: ${o}':'العشرات: ${t}');return _QuestionPage(title:'اختبار الأرقام',question:q,choices:c,correct:correct,onNext:()=>setState(()=>i=i==50?1:i+1));}}
+class _PrepShapeTest extends StatefulWidget{const _PrepShapeTest();@override State<_PrepShapeTest> createState()=>_PrepShapeTestState();}
+class _PrepShapeTestState extends State<_PrepShapeTest>{int i=0;final qs=[('أين المربع؟',['مربع','دائرة','مثلث'],'مربع'),('أين المثلث؟',['مستطيل','مثلث','دائرة'],'مثلث'),('أين الدائرة؟',['دائرة','مربع','منحرف'],'دائرة'),('أين المستطيل؟',['مثلث','مستطيل','مربع'],'مستطيل'),('أين المنحرف؟',['شبه منحرف','منحرف','دائرة'],'منحرف'),('أين شبه المنحرف؟',['مثلث','مربع','شبه منحرف'],'شبه منحرف'),('أين الخماسي؟',['سداسي','خماسي','دائرة'],'خماسي'),('أين السداسي؟',['سداسي','مثلث','مستطيل'],'سداسي')];@override Widget build(BuildContext context){final q=qs[i%qs.length];return _QuestionPage(title:'اختبار الأشكال',question:q.$1,choices:q.$2,correct:q.$3,onNext:()=>setState(()=>i++));}}
+class _PrepColorTest extends StatefulWidget{const _PrepColorTest();@override State<_PrepColorTest> createState()=>_PrepColorTestState();}
+class _PrepColorTestState extends State<_PrepColorTest>{int i=0;final qs=[('اختر اللون الأحمر',['أحمر','أزرق','أخضر'],'أحمر'),('اختر اللون الأخضر',['أصفر','أخضر','بنفسجي'],'أخضر'),('اختر اللون الأزرق',['أزرق','وردي','برتقالي'],'أزرق'),('اختر اللون الأبيض',['أسود','أبيض','بني'],'أبيض'),('اختر اللون البنفسجي',['بنفسجي','تركوازي','رمادي'],'بنفسجي')];@override Widget build(BuildContext context){final q=qs[i%qs.length];return _QuestionPage(title:'اختبار الألوان',question:q.$1,choices:q.$2,correct:q.$3,onNext:()=>setState(()=>i++));}}
+class _QuestionPage extends StatelessWidget{final String title,question,correct;final List<String> choices;final VoidCallback onNext;const _QuestionPage({required this.title,required this.question,required this.choices,required this.correct,required this.onNext});@override Widget build(BuildContext context)=>Directionality(textDirection:TextDirection.rtl,child:Scaffold(appBar:AppBar(title:Text(title)),body:ListView(padding:const EdgeInsets.all(18),children:[App3DCard(onTap:(){},child:Container(padding:const EdgeInsets.all(22),decoration:const BoxDecoration(gradient:LinearGradient(colors:[Color(0xFF8E5CF6),Color(0xFF18A7E8)]),borderRadius:BorderRadius.all(Radius.circular(24))),child:Text(question,textAlign:TextAlign.center,style:const TextStyle(color:Colors.white,fontSize:24,fontWeight:FontWeight.w900))),const SizedBox(height:18),...choices.map((x)=>Padding(padding:const EdgeInsets.only(bottom:10),child:App3DCard(onTap:(){if(x==correct){AppFeedback.show('🎉 أحسنت! إجابة صحيحة');onNext();}else{AppFeedback.show('💛 حاول مرة أخرى!');}},child:Container(padding:const EdgeInsets.symmetric(vertical:16),decoration:BoxDecoration(gradient:const LinearGradient(colors:[Color(0xFF16B878),Color(0xFF18A7E8)]),borderRadius:BorderRadius.circular(18)),child:Center(child:Text(x,style:const TextStyle(color:Colors.white,fontSize:20,fontWeight:FontWeight.w900)))))))]));}}
