@@ -208,7 +208,7 @@ class _NumbersPageState extends State<_NumbersPage> {
         Expanded(child: _Btn('الآحاد والعشرات', const Color(0xFF7652FF), () => setState(() => places = true), selected: places)),
       ]),
       if (widget.kg2) const SizedBox(height: 14),
-      GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: max, gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10), itemBuilder: (_, i) => App3DCard(onTap: () => VoiceService.arabic(_numberName(i + 1)), encouragement: '🔊 ${arNum(i + 1)}', child: Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF18A7E8), Color(0xFF42A5F5)]), borderRadius: BorderRadius.all(Radius.circular(20))), child: Center(child: Text(arNum(i + 1), style: const TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w900))))),
+      GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: max, gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10), itemBuilder: (_, i) => App3DCard(onTap: () => VoiceService.arabic(_numberName(i + 1)), encouragement: '🔊 ${arNum(i + 1)}', child: Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF18A7E8), Color(0xFF42A5F5)]), borderRadius: BorderRadius.all(Radius.circular(20))), child: Center(child: Text(arNum(i + 1), style: const TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w900)))))) ,
     ]);
   }
 }
