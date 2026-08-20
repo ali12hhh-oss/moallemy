@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/audio/voice_service.dart';
 import '../../core/localization/arabic_numbers.dart';
@@ -115,7 +116,7 @@ class _Btn extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        transform: selected ? (Matrix4.identity()..scale(1.02)) : Matrix4.identity(),
+        transform: selected ? (Matrix4.identity()..scaleByDouble(1.02)) : Matrix4.identity(),
         child: App3DCard(
           onTap: onTap,
           encouragement: '✨ $text',
@@ -314,7 +315,7 @@ class _ShapesPage extends StatelessWidget {
 IconData _shapeIcon(String name) { switch (name) { case 'دائرة': return Icons.circle; case 'مربع': return Icons.square; case 'مثلث': return Icons.change_history; case 'مستطيل': return Icons.rectangle; case 'خماسي': return Icons.pentagon; case 'سداسي': return Icons.hexagon; default: return Icons.category_rounded; } }
 class _ShapeDrawingPage extends StatefulWidget { final String name; const _ShapeDrawingPage({required this.name}); @override State<_ShapeDrawingPage> createState()=>_ShapeDrawingPageState(); }
 class _ShapeDrawingPageState extends State<_ShapeDrawingPage> { Color ink=const Color(0xFF7652FF); @override Widget build(BuildContext context)=>_Page('رسم ${widget.name}', [Text('هذا هو شكل ${widget.name}. اتبع الخطوط ثم ارسمه بنفسك.',textAlign:TextAlign.center,style:const TextStyle(fontSize:19,fontWeight:FontWeight.w800)),const SizedBox(height:8),Container(height:170,decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(22),border:Border.all(color:ink,width:3)),child:CustomPaint(painter:_ShapeGuidePainter(widget.name),child:const SizedBox.expand())),const SizedBox(height:10),_DrawingBoard(color:ink,onColorChanged:(c)=>setState(()=>ink=c))]); }
-class _ShapeGuidePainter extends CustomPainter { final String name; _ShapeGuidePainter(this.name); @override void paint(Canvas c,Size s){final p=Paint()..style=PaintingStyle.stroke..strokeWidth=5..color=Colors.grey;final center=Offset(s.width/2,s.height/2);if(name=='دائرة')c.drawCircle(center,55,p);else if(name=='مربع')c.drawRect(Rect.fromCenter(center:center,width:110,height:110),p);else if(name=='مستطيل')c.drawRect(Rect.fromCenter(center:center,width:150,height:90),p);else{final sides=name=='مثلث'?3:name=='خماسي'?5:6;final path=Path();for(var i=0;i<sides;i++){final a=-mathPi/2+i*2*mathPi/sides;final pt=center+Offset(60*Math.cos(a),60*Math.sin(a));if(i==0)path.moveTo(pt.dx,pt.dy);else path.lineTo(pt.dx,pt.dy);}path.close();c.drawPath(path,p);}} @override bool shouldRepaint(covariant _ShapeGuidePainter oldDelegate)=>oldDelegate.name!=name; }
+class _ShapeGuidePainter extends CustomPainter { final String name; _ShapeGuidePainter(this.name); @override void paint(Canvas c,Size s){final p=Paint()..style=PaintingStyle.stroke..strokeWidth=5..color=Colors.grey;final center=Offset(s.width/2,s.height/2);if(name=='دائرة')c.drawCircle(center,55,p);else if(name=='مربع')c.drawRect(Rect.fromCenter(center:center,width:110,height:110),p);else if(name=='مستطيل')c.drawRect(Rect.fromCenter(center:center,width:150,height:90),p);else{final sides=name=='مثلث'?3:name=='خماسي'?5:6;final path=Path();for(var i=0;i<sides;i++){final a=-mathPi/2+i*2*mathPi/sides;final pt=center+Offset(60*math.cos(a),60*math.sin(a));if(i==0)path.moveTo(pt.dx,pt.dy);else path.lineTo(pt.dx,pt.dy);}path.close();c.drawPath(path,p);}} @override bool shouldRepaint(covariant _ShapeGuidePainter oldDelegate)=>oldDelegate.name!=name; }
 const mathPi=3.141592653589793;
 
 class _GamesPage extends StatelessWidget { final bool kg2; const _GamesPage({required this.kg2}); @override Widget build(BuildContext context)=>_Page(kg2?'القصص والألعاب':'الألعاب',[

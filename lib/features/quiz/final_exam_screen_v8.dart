@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../data/curriculum_v8.dart';
 import '../../core/localization/arabic_numbers.dart';
@@ -36,7 +37,7 @@ class _FinalExamScreenV8State extends State<FinalExamScreenV8> {
           if (q.voiceText != null) IconButton(onPressed: () => VoiceService.arabic(q.voiceText!), icon: const Icon(Icons.volume_up)),
         ]))),
         const SizedBox(height: 18),
-        ...q.options.map((option) => Padding(padding: const EdgeInsets.only(bottom: 10), child: SizedBox(width: double.infinity, child: FilledButton.tonal(onPressed: answered ? null : () => _answer(option == q.answer), child: Text(option, style: const TextStyle(fontSize: 21))))),
+        ...q.options.map((option) => Padding(padding: const EdgeInsets.only(bottom: 10), child: SizedBox(width: double.infinity, child: FilledButton.tonal(onPressed: answered ? null : () => _answer(option == q.answer), child: Text(option, style: const TextStyle(fontSize: 21)))))) ,
       ])),
     ));
   }
@@ -180,7 +181,7 @@ class _ShapeChoice extends StatelessWidget {
 }
 class _ShapeOptionPainter extends CustomPainter {
   final String name; _ShapeOptionPainter(this.name);
-  @override void paint(Canvas c, Size s){final p=Paint()..color=Colors.deepPurple..style=PaintingStyle.fill;final o=Paint()..color=Colors.black87..style=PaintingStyle.stroke..strokeWidth=4;final center=Offset(s.width/2,s.height/2);if(name=='دائرة'){c.drawCircle(center,38,p);c.drawCircle(center,38,o);}else if(name=='مربع'){final r=Rect.fromCenter(center:center,width:70,height:70);c.drawRect(r,p);c.drawRect(r,o);}else if(name=='مستطيل'){final r=Rect.fromCenter(center:center,width:100,height:60);c.drawRect(r,p);c.drawRect(r,o);}else{final path=Path();final sides=name=='مثلث'?3:4;for(var i=0;i<sides;i++){final a=-1.5708+i*6.2832/sides;final pt=center+Offset(42*Math.cos(a),42*Math.sin(a));if(i==0)path.moveTo(pt.dx,pt.dy);else path.lineTo(pt.dx,pt.dy);}path.close();c.drawPath(path,p);c.drawPath(path,o);}}
+  @override void paint(Canvas c, Size s){final p=Paint()..color=Colors.deepPurple..style=PaintingStyle.fill;final o=Paint()..color=Colors.black87..style=PaintingStyle.stroke..strokeWidth=4;final center=Offset(s.width/2,s.height/2);if(name=='دائرة'){c.drawCircle(center,38,p);c.drawCircle(center,38,o);}else if(name=='مربع'){final r=Rect.fromCenter(center:center,width:70,height:70);c.drawRect(r,p);c.drawRect(r,o);}else if(name=='مستطيل'){final r=Rect.fromCenter(center:center,width:100,height:60);c.drawRect(r,p);c.drawRect(r,o);}else{final path=Path();final sides=name=='مثلث'?3:4;for(var i=0;i<sides;i++){final a=-1.5708+i*6.2832/sides;final pt=center+Offset(42*math.cos(a),42*math.sin(a));if(i==0)path.moveTo(pt.dx,pt.dy);else path.lineTo(pt.dx,pt.dy);}path.close();c.drawPath(path,p);c.drawPath(path,o);}}
   @override bool shouldRepaint(covariant _ShapeOptionPainter oldDelegate)=>oldDelegate.name!=name;
 }
 class _ColorChoice extends StatelessWidget {
