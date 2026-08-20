@@ -265,8 +265,8 @@ class _WritingPageState extends State<_WritingPage> {
   }
 }
 class _DrawingBoard extends StatefulWidget {
-  final Color color; final ValueChanged<Color> onColorChanged; final bool showUndo;
-  const _DrawingBoard({required this.color, required this.onColorChanged, this.showUndo = true});
+  final Color color; final ValueChanged<Color> onColorChanged;
+  const _DrawingBoard({required this.color, required this.onColorChanged});
   @override State<_DrawingBoard> createState() => _DrawingBoardState();
 }
 class _DrawingBoardState extends State<_DrawingBoard> {
@@ -278,7 +278,7 @@ class _DrawingBoardState extends State<_DrawingBoard> {
     return Column(children: [
       Container(height: 290, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), border: Border.all(color: widget.color, width: 3)), child: Listener(behavior: HitTestBehavior.opaque, onPointerDown: (e) => setState(() => current = <Offset>[e.localPosition]), onPointerMove: (e) => setState(() => current = <Offset>[...current, e.localPosition]), onPointerUp: (_) { if (current.isNotEmpty) strokes.add(List<Offset>.of(current)); setState(() => current = <Offset>[]); }, onPointerCancel: (_) => setState(() => current = <Offset>[]), child: CustomPaint(painter: _DrawingPainter(widget.color, strokes, current), child: const SizedBox.expand()))),
       const SizedBox(height: 6), SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [const Text('لون القلم: ', style: TextStyle(fontWeight: FontWeight.w800)), for (final color in colors) GestureDetector(onTap: () => widget.onColorChanged(color), child: Container(width: 34, height: 34, margin: const EdgeInsets.all(4), decoration: BoxDecoration(color: color, shape: BoxShape.circle, border: Border.all(color: Colors.black12))))])),
-      const SizedBox(height: 6), Row(children: [if (widget.showUndo) Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)), if (widget.showUndo) const SizedBox(width: 8), Expanded(flex: 2, child: _Btn('🗑 مسح السبورة', const Color(0xFFE53935), clear))]),
+      const SizedBox(height: 6), Row(children: [Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)), const SizedBox(width: 8), Expanded(flex: 2, child: _Btn('🗑 مسح السبورة', const Color(0xFFE53935), clear))]),
     ]);
   }
 }
