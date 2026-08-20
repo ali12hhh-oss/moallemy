@@ -122,7 +122,7 @@ class _Btn extends StatelessWidget {
   Widget build(BuildContext context) => AnimatedContainer(
     duration: const Duration(milliseconds: 160),
     decoration: BoxDecoration(color: selected ? color.withValues(alpha: .72) : color, borderRadius: BorderRadius.circular(15), border: selected ? Border.all(color: Colors.white, width: 3) : null, boxShadow: const [BoxShadow(blurRadius: 4, offset: Offset(0, 2))]),
-    child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(15), onTap: onTap, child: Padding(padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8), child: Center(child: Text(text, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900))))),
+    child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(15), onTap: onTap, child: Padding(padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8), child: Center(child: Text(text, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900)))))) ,
   );
 }
 
