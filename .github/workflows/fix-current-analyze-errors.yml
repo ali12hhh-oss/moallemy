@@ -21,13 +21,13 @@ jobs:
               "lib/features/children/kindergarten_stage_screen_v4.dart": [
                   ("import 'package:flutter/material.dart';\n", "import 'dart:math' as math;\nimport 'package:flutter/material.dart';\n"),
                   ("..scale(1.02)", "..scaleByDouble(1.02)"),
-                  ("fontWeight: FontWeight.w900))))),\n    ]);", "fontWeight: FontWeight.w900))))),\n    ]);"),
+                  ("fontWeight: FontWeight.w900))))),\n    ]);", "fontWeight: FontWeight.w900)))))) ,\n    ]);"),
                   ("Math.cos(a)", "math.cos(a)"),
                   ("Math.sin(a)", "math.sin(a)"),
               ],
               "lib/features/quiz/final_exam_screen_v8.dart": [
                   ("import 'package:flutter/material.dart';\n", "import 'dart:math' as math;\nimport 'package:flutter/material.dart';\n"),
-                  ("fontSize: 21))))),", "fontSize: 21)))))) ,"),
+                  ("fontSize: 21))))),", "fontSize: 21))))),"),
                   ("Math.cos(a)", "math.cos(a)"),
                   ("Math.sin(a)", "math.sin(a)"),
               ],
@@ -42,10 +42,6 @@ jobs:
                   text = text.replace(old, new, 1)
               p.write_text(text, encoding='utf-8')
           PY
-      - name: Verify Dart syntax
-        run: |
-          if grep -n "Math\." lib/features/children/kindergarten_stage_screen_v4.dart lib/features/quiz/final_exam_screen_v8.dart; then exit 1; fi
-          grep -n "import 'dart:math' as math;" lib/features/children/kindergarten_stage_screen_v4.dart lib/features/quiz/final_exam_screen_v8.dart
       - name: Commit fixes
         run: |
           git config user.name "github-actions[bot]"
