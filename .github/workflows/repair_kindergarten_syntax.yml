@@ -14,19 +14,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Repair missing closing parenthesis
+      - name: Repair numbers GridView syntax
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('lib/features/children/kindergarten_stage_screen_v4.dart')
           s = p.read_text()
-          old = "fontWeight: FontWeight.w900)))),\n    ]);"
-          new = "fontWeight: FontWeight.w900)))),),\n    ]);"
+          old = "fontWeight: FontWeight.w900))))),\n    ]);"
+          new = "fontWeight: FontWeight.w900)))))) ,\n    ]);"
           if old in s:
-              # The GridView.builder call needs one additional ')' after App3DCard.
-              new = "fontWeight: FontWeight.w900))))),\n    ]);"
-              s = s.replace(old, new, 1)
+              s = s.replace(old, new, 1).replace(')))))) ,', ')))))),' , 1)
               p.write_text(s)
           PY
 
@@ -35,7 +33,8 @@ jobs:
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add lib/features/children/kindergarten_stage_screen_v4.dart
             git commit -m 'fix: close kindergarten numbers grid builder'
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           else
             echo 'No syntax repair needed.'
           fi
