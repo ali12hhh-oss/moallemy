@@ -27,13 +27,16 @@ jobs:
           s = s.replace("final Color color; final ValueChanged<Color> onColorChanged; final bool showUndo;", "final Color color; final ValueChanged<Color> onColorChanged;")
           s = s.replace("const _DrawingBoard({required this.color, required this.onColorChanged, this.showUndo = true});", "const _DrawingBoard({required this.color, required this.onColorChanged});")
           s = s.replace("if (widget.showUndo) Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)), if (widget.showUndo) const SizedBox(width: 8), Expanded(flex: 2, child: _Btn('🗑 مسح السبورة', const Color(0xFFE53935), clear))", "Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)), const SizedBox(width: 8), Expanded(flex: 2, child: _Btn('🗑 مسح السبورة', const Color(0xFFE53935), clear))")
+          # Repair the missing closing parenthesis in _Btn's nested child expression.
+          s = s.replace("fontWeight: FontWeight.w900))))),", "fontWeight: FontWeight.w900)))))) ,")
+          s = s.replace("fontWeight: FontWeight.w900)))))) ,", "fontWeight: FontWeight.w900)))))) ,")
           p.write_text(s)
           PY
           if ! git diff --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add lib/features/children/kindergarten_stage_screen_v4.dart
-            git commit -m 'fix: remove kindergarten analyzer warning'
+            git commit -m 'fix: repair kindergarten button syntax'
             git pull --rebase origin main
             git push origin HEAD:main
           fi
@@ -113,19 +116,15 @@ jobs:
           else
             echo ""
             echo "========== APK NOT FOUND =========="
-
             echo ""
             echo "========== BUILD APK FILES =========="
             find build -type f -name "*.apk" -print 2>/dev/null || true
-
             echo ""
             echo "========== ANDROID APK FILES =========="
             find android -type f -name "*.apk" -print 2>/dev/null || true
-
             echo ""
             echo "========== ANDROID BUILD OUTPUTS =========="
             find android/app/build/outputs -maxdepth 8 -type f -print 2>/dev/null || true
-
             exit 1
           fi
 
@@ -180,29 +179,23 @@ jobs:
           elif [ -f "$GRADLE_AAB" ]; then
             echo "AAB found at:"
             echo "$GRADLE_AAB"
-
             mkdir -p "$(dirname "$FLUTTER_AAB")"
             cp "$GRADLE_AAB" "$FLUTTER_AAB"
-
             echo "AAB copied to:"
             echo "$FLUTTER_AAB"
 
           else
             echo ""
             echo "========== AAB NOT FOUND =========="
-
             echo ""
             echo "========== BUILD AAB FILES =========="
             find build -type f -name "*.aab" -print 2>/dev/null || true
-
             echo ""
             echo "========== ANDROID AAB FILES =========="
             find android -type f -name "*.aab" -print 2>/dev/null || true
-
             echo ""
             echo "========== ANDROID BUNDLE OUTPUTS =========="
             find android/app/build/outputs -maxdepth 8 -type f -print 2>/dev/null || true
-
             exit 1
           fi
 
