@@ -1,0 +1,67 @@
+name: Fix analyze clean
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Fix exact syntax errors and apply Dart fixes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/features/children/kindergarten_stage_screen_v4.dart')
+          t = p.read_text(encoding='utf-8')
+          t = t.replace('..scaleByDouble(1.02)', '..scaleByDouble(1.02, 1.02, 1.02, 1.0)')
+          old = "GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: max, gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10), itemBuilder: (_, i) => App3DCard(onTap: () => VoiceService.arabic(_numberName(i + 1)), encouragement: '🔊 ${arNum(i + 1)}', child: Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF18A7E8), Color(0xFF42A5F5)]), borderRadius: BorderRadius.all(Radius.circular(20))), child: Center(child: Text(arNum(i + 1), style: const TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w900)))))) ,"
+          new = """GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: max,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemBuilder: (_, i) => App3DCard(
+          onTap: () => VoiceService.arabic(_numberName(i + 1)),
+          encouragement: '🔊 ${arNum(i + 1)}',
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(colors: [Color(0xFF18A7E8), Color(0xFF42A5F5)]),
+              borderRadius: BorderRadius.all(Radius.circular(20)),
+            ),
+            child: Center(
+              child: Text(
+                arNum(i + 1),
+                style: const TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w900),
+              ),
+            ),
+          ),
+        ),
+      ),"""
+          if old not in t:
+              raise SystemExit('Expected numbers GridView block was not found')
+          t = t.replace(old, new, 1)
+          p.write_text(t, encoding='utf-8')
+          PY
+          dart fix --apply lib/features/children/kindergarten_stage_screen_v4.dart lib/features/quiz/final_exam_screen_v8.dart || true
+          dart format lib/features/children/kindergarten_stage_screen_v4.dart lib/features/quiz/final_exam_screen_v8.dart
+          flutter analyze
+      - name: Commit fixes and remove temporary workflow
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/features/children/kindergarten_stage_screen_v4.dart lib/features/quiz/final_exam_screen_v8.dart
+          git commit -m "fix: clean remaining Dart analyze issues" || true
+          git rm -f .github/workflows/fix-analyze-clean.yml || true
+          git commit -m "chore: remove temporary analyze fixer" || true
+          git push || true
