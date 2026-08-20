@@ -1,0 +1,41 @@
+name: Repair kindergarten syntax
+
+on:
+  push:
+    branches: [ main, master ]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Repair missing closing parenthesis
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/features/children/kindergarten_stage_screen_v4.dart')
+          s = p.read_text()
+          old = "fontWeight: FontWeight.w900)))),\n    ]);"
+          new = "fontWeight: FontWeight.w900)))),),\n    ]);"
+          if old in s:
+              # The GridView.builder call needs one additional ')' after App3DCard.
+              new = "fontWeight: FontWeight.w900))))),\n    ]);"
+              s = s.replace(old, new, 1)
+              p.write_text(s)
+          PY
+
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add lib/features/children/kindergarten_stage_screen_v4.dart
+            git commit -m 'fix: close kindergarten numbers grid builder'
+            git push
+          else
+            echo 'No syntax repair needed.'
+          fi
