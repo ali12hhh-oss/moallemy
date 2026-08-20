@@ -17,25 +17,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Repair known kindergarten Dart issues
+      - name: Repair kindergarten source and enforce warning-free analysis
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('lib/features/children/kindergarten_stage_screen_v4.dart')
           s = p.read_text()
-          s = s.replace("import 'package:flutter/material.dart';", "import 'dart:math' as math;\nimport 'package:flutter/material.dart';", 1)
-          s = s.replace('(Matrix4.identity()..scale(1.02))', '(Matrix4.identity()..scaleByDouble(1.02, 1.02, 1.0, 1.0))')
-          s = s.replace('))))),\n    ]);', ')))),\n    ]);')
-          s = s.replace('Math.cos', 'math.cos').replace('Math.sin', 'math.sin')
+          s = s.replace("final Color color; final ValueChanged<Color> onColorChanged; final bool showUndo;", "final Color color; final ValueChanged<Color> onColorChanged;")
+          s = s.replace("const _DrawingBoard({required this.color, required this.onColorChanged, this.showUndo = true});", "const _DrawingBoard({required this.color, required this.onColorChanged});")
+          s = s.replace("if (widget.showUndo) Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)), if (widget.showUndo) const SizedBox(width: 8), Expanded(flex: 2, child: _Btn('🗑 مسح السبورة', const Color(0xFFE53935), clear))", "Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)), const SizedBox(width: 8), Expanded(flex: 2, child: _Btn('🗑 مسح السبورة', const Color(0xFFE53935), clear))")
           p.write_text(s)
           PY
           if ! git diff --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add lib/features/children/kindergarten_stage_screen_v4.dart
-            git commit -m 'fix: repair kindergarten Dart syntax and math API'
-            git push
+            git commit -m 'fix: remove kindergarten analyzer warning'
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
 
       - name: Setup Flutter
@@ -55,7 +55,7 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        run: flutter analyze
+        run: flutter analyze --fatal-warnings
 
       - name: Test
         run: flutter test
