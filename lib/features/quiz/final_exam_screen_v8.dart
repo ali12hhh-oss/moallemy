@@ -76,11 +76,7 @@ class _FinalExamScreenV8State extends State<FinalExamScreenV8> {
         return Column(children: [Text(q.target!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 64, fontWeight: FontWeight.w900)), const SizedBox(height: 8), _ExamDrawingBoard(onDone: _nextPrep)]);
       case _QuestionType.place:
         final number = q.number!; final tens = number ~/ 10; final ones = number % 10; final target = q.target == 'ones' ? ones : tens;
-        return Column(children: [
-          Text(arNum(number), textAlign: TextAlign.center, style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w900)),
-          Text(q.target == 'ones' ? 'اضغط رقم الآحاد' : 'اضغط رقم العشرات', textAlign: TextAlign.center, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12), Row(mainAxisAlignment: MainAxisAlignment.center, children: [_DigitChoice(number ~/ 10, target, _nextPrep), const SizedBox(width: 18), _DigitChoice(number % 10, target, _nextPrep)]),
-        ]);
+        return Column(children: [Text(arNum(number), textAlign: TextAlign.center, style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w900)), Text(q.target == 'ones' ? 'اضغط رقم الآحاد' : 'اضغط رقم العشرات', textAlign: TextAlign.center, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)), const SizedBox(height: 12), Row(mainAxisAlignment: MainAxisAlignment.center, children: [_DigitChoice(number ~/ 10, target, _nextPrep), const SizedBox(width: 18), _DigitChoice(number % 10, target, _nextPrep)])]);
       case _QuestionType.shape:
         return Wrap(alignment: WrapAlignment.center, spacing: 10, runSpacing: 10, children: q.shapeOptions!.map((name) => _ShapeChoice(name: name, correct: name == q.answer, onTap: _nextPrep)).toList());
       case _QuestionType.color:
@@ -164,7 +160,7 @@ class _ExamDrawingBoardState extends State<_ExamDrawingBoard> {
   void undo() { if (strokes.isNotEmpty) setState(() => strokes.removeLast()); }
   @override Widget build(BuildContext context) => Column(children: [
     Container(height: 300, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), border: Border.all(width: 3)), child: Listener(behavior: HitTestBehavior.opaque, onPointerDown: (e) => setState(() => current = [e.localPosition]), onPointerMove: (e) => setState(() => current = [...current, e.localPosition]), onPointerUp: (_) { if (current.isNotEmpty) strokes.add(List<Offset>.of(current)); setState(() => current = []); }, child: CustomPaint(painter: _ExamPainter(strokes, current), child: const SizedBox.expand()))),
-    const SizedBox(height: 8), Row(children: [Expanded(child: FilledButton.tonal(onPressed: undo, child: const Text('↩ تراجع'))), const SizedBox(width: 8), Expanded(child: FilledButton.tonal(onPressed: clear, child: const Text('🗑 مسح'))), const SizedBox(width: 8), Expanded(child: FilledButton(onPressed: () => widget.onDone(correct: true), child: const Text('تم')))]),
+    const SizedBox(height: 8), Row(children: [Expanded(child: FilledButton.tonal(onPressed: undo, child: const Text('↩ تراجع'))), const SizedBox(width: 8), Expanded(child: FilledButton.tonal(onPressed: clear, child: const Text('🗑 مسح'))), const SizedBox(width: 8), Expanded(child: FilledButton(onPressed: strokes.isEmpty ? null : () => widget.onDone(correct: true), child: const Text('تم')))]),
   ]);
 }
 class _ExamPainter extends CustomPainter {
