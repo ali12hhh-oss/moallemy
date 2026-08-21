@@ -6,8 +6,9 @@ on:
     branches: [ main, master ]
   pull_request:
 
+# CI must never modify or push to the source branch.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   analyze-test-build:
@@ -17,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -25,84 +26,9 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Repair kindergarten source deterministically
-        shell: bash
-        run: |
-          set -euo pipefail
-          file="lib/features/children/kindergarten_stage_screen_v4.dart"
-
-          repair_file() {
-            python3 - "$file" <<'PY'
-          from pathlib import Path
-          import sys
-
-          path = Path(sys.argv[1])
-          text = path.read_text(encoding='utf-8')
-          original = text
-          stripped = text.rstrip()
-
-          # The file ends in _NumberGameState.build(). Its valid tail must be:
-          #   ],
-          # );
-          # }
-          # }
-          # Normalize only this final tail; do not rewrite the rest of the file.
-          if not stripped.endswith('}'):
-              if stripped.endswith(');'):
-                  stripped += '\n  }\n}'
-              elif stripped.endswith('],'):
-                  stripped += '\n    );\n  }\n}'
-              else:
-                  raise SystemExit('ERROR: kindergarten file has an unexpected ending; refusing to guess.')
-
-          if not stripped.endswith('\n'):
-              stripped += '\n'
-
-          if stripped != original:
-              path.write_text(stripped, encoding='utf-8')
-              print('Kindergarten source tail repaired.')
-          else:
-              print('Kindergarten source tail already complete.')
-          PY
-          }
-
-          repair_file
-
-          if ! git diff --quiet -- "$file"; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add "$file"
-            git commit -m "fix: repair kindergarten source tail"
-
-            # Persist the repair without losing commits that arrive concurrently.
-            pushed=false
-            for attempt in 1 2 3 4 5; do
-              git fetch origin main
-              if ! git rebase origin/main; then
-                git rebase --abort || true
-                echo "Rebase failed on attempt $attempt; retrying."
-              else
-                repair_file
-                if ! git diff --quiet -- "$file"; then
-                  git add "$file"
-                  git commit --amend --no-edit
-                fi
-                if git push origin HEAD:main; then
-                  pushed=true
-                  break
-                fi
-                echo "Push rejected on attempt $attempt; remote advanced."
-              fi
-              sleep 2
-            done
-            if [ "$pushed" != true ]; then
-              echo "ERROR: Could not persist kindergarten source repair after 5 attempts."
-              exit 1
-            fi
-          fi
-
       - name: Verify Android project
         run: |
+          set -euo pipefail
           test -f android/settings.gradle.kts
           test -f android/build.gradle.kts
           test -f android/app/build.gradle.kts
@@ -142,8 +68,11 @@ jobs:
         run: flutter build appbundle --release
 
       - name: Verify AAB
+        shell: bash
         run: |
           set -euo pipefail
+          echo "AAB files produced by the build:"
+          find build -type f -name '*.aab' -print | sort
           aab="$(find build -type f -name 'app-release.aab' -print -quit)"
           if [ -z "$aab" ]; then
             echo "ERROR: app-release.aab was not produced anywhere under build/."
