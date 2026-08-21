@@ -237,7 +237,7 @@ class _DrawingBoard extends StatefulWidget {
 class _DrawingBoardState extends State<_DrawingBoard> {
   final strokes = <List<Offset>>[];
   List<Offset> current = <Offset>[];
-  static const colors = <Color>[Colors.black, Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.pink];
+  static const colors = <Color>[Colors.black, Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple];
   @override
   Widget build(BuildContext context) => Column(children: [
     Expanded(child: Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: widget.color, width: 3)), child: Listener(behavior: HitTestBehavior.opaque, onPointerDown: (e) => setState(() => current = [e.localPosition]), onPointerMove: (e) => setState(() => current = [...current, e.localPosition]), onPointerUp: (_) { if (current.isNotEmpty) strokes.add(List<Offset>.of(current)); setState(() => current = []); }, onPointerCancel: (_) => setState(() => current = []), child: CustomPaint(painter: _DrawingPainter(widget.color, strokes, current), child: const SizedBox.expand())))),
@@ -261,9 +261,9 @@ class _ColorsPage extends StatefulWidget {
 }
 class _ColorsPageState extends State<_ColorsPage> {
   int drawing = 0; Color selected = const Color(0xFFF44336);
-  final colors = const <Color>[Color(0xFFF44336), Color(0xFF2196F3), Color(0xFFFFC107), Color(0xFF4CAF50), Color(0xFFFF8A00), Color(0xFF8E5CF6), Color(0xFFE91E63), Color(0xFF00AFA5)];
-  final names = const ['أحمر','أزرق','أصفر','أخضر','برتقالي','بنفسجي','وردي','تركوازي'];
-  final drawings = const ['قطة','سمكة','أرنب','فراشة','فيل'];
+  final colors = const <Color>[Color(0xFFF44336), Color(0xFF2196F3), Color(0xFFFFC107), Color(0xFF4CAF50), Color(0xFFFF8A00), Color(0xFF8E5CF6), Color(0xFF00AFA5)];
+  final names = const ['أحمر','أزرق','أصفر','أخضر','برتقالي','بنفسجي','تركوازي'];
+  final drawings = const ['قطة'];
   final fills = List<Color>.filled(6, Colors.white);
   @override
   Widget build(BuildContext context) => _Page('الألوان والتلوين', [
@@ -306,7 +306,7 @@ class _ColoringPainter extends CustomPainter {
   }
   @override bool shouldRepaint(covariant _ColoringPainter oldDelegate) => true;
 }
-String drawingsLabel(int i) => const ['قطة','سمكة','أرنب','فراشة','فيل'][i];
+String drawingsLabel(int i) => const ['قطة'][i];
 
 class _ShapesPage extends StatelessWidget {
   final bool kg2;
