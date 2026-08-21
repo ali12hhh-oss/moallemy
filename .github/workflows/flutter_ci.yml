@@ -1,5 +1,7 @@
 name: Flutter Android CI
-# CI build is intentionally kept active so every main-branch change is analyzed, tested, and built.
+
+# Every push to main/master automatically runs analysis, tests, APK build and AAB build.
+# There is intentionally no self-modifying repair step: source changes must be committed normally.
 
 on:
   push:
@@ -7,7 +9,7 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   analyze-test-build:
@@ -16,30 +18,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Repair kindergarten source and enforce warning-free analysis
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('lib/features/children/kindergarten_stage_screen_v4.dart')
-          s = p.read_text()
-          s = s.replace("final Color color; final ValueChanged<Color> onColorChanged; final bool showUndo;", "final Color color; final ValueChanged<Color> onColorChanged;")
-          s = s.replace("const _DrawingBoard({required this.color, required this.onColorChanged, this.showUndo = true});", "const _DrawingBoard({required this.color, required this.onColorChanged});")
-          s = s.replace("if (widget.showUndo) Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)), if (widget.showUndo) const SizedBox(width: 8), Expanded(flex: 2, child: _Btn('🗑 مسح السبورة', const Color(0xFFE53935), clear))", "Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)), const SizedBox(width: 8), Expanded(flex: 2, child: _Btn('🗑 مسح السبورة', const Color(0xFFE53935), clear))")
-          # Repair the missing closing parenthesis in _Btn's nested child expression.
-          s = s.replace("fontWeight: FontWeight.w900))))),", "fontWeight: FontWeight.w900)))))) ,")
-          s = s.replace("fontWeight: FontWeight.w900)))))) ,", "fontWeight: FontWeight.w900)))))) ,")
-          p.write_text(s)
-          PY
-          if ! git diff --quiet; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add lib/features/children/kindergarten_stage_screen_v4.dart
-            git commit -m 'fix: repair kindergarten button syntax'
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -63,164 +41,22 @@ jobs:
       - name: Test
         run: flutter test
 
-      # ------------------------------------------------------------
-      # Build APK
-      # ------------------------------------------------------------
       - name: Build APK
-        shell: bash
-        run: |
-          set +e
-
-          flutter build apk --release
-          FLUTTER_EXIT=$?
-
-          echo ""
-          echo "========== FLUTTER APK BUILD RESULT =========="
-          echo "Flutter exit code: $FLUTTER_EXIT"
-
-          FLUTTER_APK="build/app/outputs/flutter-apk/app-release.apk"
-          GRADLE_APK="android/app/build/outputs/flutter-apk/app-release.apk"
-          GRADLE_APK_RELEASE="android/app/build/outputs/apk/release/app-release.apk"
-
-          echo ""
-          echo "========== SEARCHING FOR APK =========="
-          find . -type f -name "app-release.apk" -print 2>/dev/null || true
-
-          echo ""
-          echo "========== NORMALIZING APK OUTPUT =========="
-
-          if [ -f "$FLUTTER_APK" ]; then
-            echo "APK already exists at:"
-            echo "$FLUTTER_APK"
-
-          elif [ -f "$GRADLE_APK" ]; then
-            echo "APK found at:"
-            echo "$GRADLE_APK"
-
-            mkdir -p "$(dirname "$FLUTTER_APK")"
-            cp "$GRADLE_APK" "$FLUTTER_APK"
-
-            echo "APK copied to:"
-            echo "$FLUTTER_APK"
-
-          elif [ -f "$GRADLE_APK_RELEASE" ]; then
-            echo "APK found at:"
-            echo "$GRADLE_APK_RELEASE"
-
-            mkdir -p "$(dirname "$FLUTTER_APK")"
-            cp "$GRADLE_APK_RELEASE" "$FLUTTER_APK"
-
-            echo "APK copied to:"
-            echo "$FLUTTER_APK"
-
-          else
-            echo ""
-            echo "========== APK NOT FOUND =========="
-            echo ""
-            echo "========== BUILD APK FILES =========="
-            find build -type f -name "*.apk" -print 2>/dev/null || true
-            echo ""
-            echo "========== ANDROID APK FILES =========="
-            find android -type f -name "*.apk" -print 2>/dev/null || true
-            echo ""
-            echo "========== ANDROID BUILD OUTPUTS =========="
-            find android/app/build/outputs -maxdepth 8 -type f -print 2>/dev/null || true
-            exit 1
-          fi
-
-          echo ""
-          echo "========== FINAL APK =========="
-          test -f "$FLUTTER_APK"
-          ls -lh "$FLUTTER_APK"
-
-          if [ "$FLUTTER_EXIT" -ne 0 ]; then
-            echo ""
-            echo "Flutter returned exit code $FLUTTER_EXIT,"
-            echo "but a valid APK was produced by Gradle."
-            echo "Continuing because the APK exists."
-          fi
+        run: flutter build apk --release
 
       - name: Verify APK
-        shell: bash
         run: |
-          echo "========== VERIFY APK =========="
           test -f build/app/outputs/flutter-apk/app-release.apk
           ls -lh build/app/outputs/flutter-apk/app-release.apk
 
-      # ------------------------------------------------------------
-      # Build AAB
-      # ------------------------------------------------------------
       - name: Build AAB
-        shell: bash
-        run: |
-          set +e
-
-          flutter build appbundle --release
-          FLUTTER_EXIT=$?
-
-          echo ""
-          echo "========== FLUTTER AAB BUILD RESULT =========="
-          echo "Flutter exit code: $FLUTTER_EXIT"
-
-          FLUTTER_AAB="build/app/outputs/bundle/release/app-release.aab"
-          GRADLE_AAB="android/app/build/outputs/bundle/release/app-release.aab"
-
-          echo ""
-          echo "========== SEARCHING FOR AAB =========="
-          find . -type f -name "app-release.aab" -print 2>/dev/null || true
-
-          echo ""
-          echo "========== NORMALIZING AAB OUTPUT =========="
-
-          if [ -f "$FLUTTER_AAB" ]; then
-            echo "AAB already exists at:"
-            echo "$FLUTTER_AAB"
-
-          elif [ -f "$GRADLE_AAB" ]; then
-            echo "AAB found at:"
-            echo "$GRADLE_AAB"
-            mkdir -p "$(dirname "$FLUTTER_AAB")"
-            cp "$GRADLE_AAB" "$FLUTTER_AAB"
-            echo "AAB copied to:"
-            echo "$FLUTTER_AAB"
-
-          else
-            echo ""
-            echo "========== AAB NOT FOUND =========="
-            echo ""
-            echo "========== BUILD AAB FILES =========="
-            find build -type f -name "*.aab" -print 2>/dev/null || true
-            echo ""
-            echo "========== ANDROID AAB FILES =========="
-            find android -type f -name "*.aab" -print 2>/dev/null || true
-            echo ""
-            echo "========== ANDROID BUNDLE OUTPUTS =========="
-            find android/app/build/outputs -maxdepth 8 -type f -print 2>/dev/null || true
-            exit 1
-          fi
-
-          echo ""
-          echo "========== FINAL AAB =========="
-          test -f "$FLUTTER_AAB"
-          ls -lh "$FLUTTER_AAB"
-
-          if [ "$FLUTTER_EXIT" -ne 0 ]; then
-            echo ""
-            echo "Flutter returned exit code $FLUTTER_EXIT,"
-            echo "but a valid AAB was produced by Gradle."
-            echo "Continuing because the AAB exists."
-          fi
+        run: flutter build appbundle --release
 
       - name: Verify AAB
-        shell: bash
         run: |
-          echo "========== VERIFY AAB =========="
           test -f build/app/outputs/bundle/release/app-release.aab
           ls -lh build/app/outputs/bundle/release/app-release.aab
 
-      # ------------------------------------------------------------
-      # Upload APK
-      # ------------------------------------------------------------
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -228,9 +64,6 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
 
-      # ------------------------------------------------------------
-      # Upload AAB
-      # ------------------------------------------------------------
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
