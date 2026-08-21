@@ -398,4 +398,3 @@ class _NumberGameState extends State<_NumberGame>{
   void speak()=>VoiceService.arabic(_ar(target));
   void answer(int v){if(v!=target){VoiceService.arabic('حاول مرة أخرى');return;}setState((){score++;target=random.nextInt(widget.max)+1;newRound();});WidgetsBinding.instance.addPostFrameCallback((_){speak();});}
   @override Widget build(BuildContext context)=>_Page('لعبة الأرقام',[const Text('استمع ثم اختر الرقم الصحيح',textAlign:TextAlign.center),_Btn('🔊 نطق السؤال',const Color(0xFF18A7E8),speak),Text('النقاط: ${_ar(score)}'),for(final v in options)_Btn(_ar(v),const Color(0xFF16B878),()=>answer(v))]);
-}
