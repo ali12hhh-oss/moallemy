@@ -12,7 +12,12 @@ class KindergartenStageScreenV4 extends StatelessWidget {
     ] : const [
       _MenuItem('الحروف','٢٨ حرفًا عربيًا + صوت واسم',Icons.abc_rounded),_MenuItem('الأرقام','من ١ إلى ١٠ مع النطق',Icons.pin_rounded),_MenuItem('الكتابة','حروف وأرقام مع لوحة كتابة',Icons.draw_rounded),_MenuItem('الألوان','ألوان ورسوم قابلة للتلوين',Icons.palette_rounded),_MenuItem('الأشكال','مربع ومثلث ودائرة ومستطيل',Icons.category_rounded),_MenuItem('الألعاب','ألعاب حروف وأرقام فعلية',Icons.sports_esports_rounded)
     ];
-    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(appBar: AppBar(title: Text(kg2?'الروضة الثانية':'الروضة الأولى')),body: ListView(padding:const EdgeInsets.all(16),children:[for(final i in items)...[_MenuCard(i.title,i.subtitle,i.icon,()=>_open(context,i.title)),const SizedBox(height:12)]]));
+    final menuChildren = <Widget>[];
+    for (final i in items) {
+      menuChildren.add(_MenuCard(i.title, i.subtitle, i.icon, () => _open(context, i.title)));
+      menuChildren.add(const SizedBox(height: 12));
+    }
+    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(appBar: AppBar(title: Text(kg2 ? 'الروضة الثانية' : 'الروضة الأولى')), body: ListView(padding: const EdgeInsets.all(16), children: menuChildren)));
   }
   void _open(BuildContext c,String t){late Widget p;switch(t){case 'الحروف':p=_LettersPage(kg2:kg2);break;case 'الأرقام':p=_NumbersPage(kg2:kg2);break;case 'الكتابة':p=_WritingPage(kg2:kg2);break;case 'الألوان':p=_ColorsPage(kg2:kg2);break;case 'الأشكال':p=_ShapesPage(kg2:kg2);break;default:p=_GamesPage(kg2:kg2);}Navigator.push(c,MaterialPageRoute(builder:(_)=>p));}
 }
