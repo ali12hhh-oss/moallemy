@@ -199,9 +199,7 @@ class _Btn extends StatelessWidget {
       decoration: BoxDecoration(
         color: selected ? color.withAlpha(190) : color,
         borderRadius: BorderRadius.circular(15),
-        border: selected
-            ? Border.all(color: Colors.white, width: 3)
-            : null,
+        border: selected ? Border.all(color: Colors.white, width: 3) : null,
       ),
       child: Material(
         color: Colors.transparent,
@@ -1108,6 +1106,8 @@ class _NumberGameState extends State<_NumberGame> {
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
         ),
         for (final value in options)
-           _Btn(_ar(value), const Color(0xFF16B878), () => answer(value)),
+          _Btn(_ar(value), const Color(0xFF16B878), () => answer(value)),
       ],
     );
+  }
+}
