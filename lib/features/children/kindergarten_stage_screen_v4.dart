@@ -1108,6 +1108,8 @@ class _NumberGameState extends State<_NumberGame> {
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
         ),
         for (final value in options)
-          _Btn(_ar(value), const Color(0xFF16B878), () => answer(value)),
+           _Btn(_ar(value), const Color(0xFF16B878), () => answer(value)),
       ],
     );
+  }
+}
