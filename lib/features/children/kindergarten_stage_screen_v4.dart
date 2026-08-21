@@ -16,19 +16,19 @@ class KindergartenStageScreenV4 extends StatelessWidget {
     final items = kg2
         ? const <_MenuItem>[
             _MenuItem('الحروف', 'أولي ووسطي وآخري + نطق', Icons.abc_rounded),
-            _MenuItem('الأرقام', '١ إلى ٥٠ + الآحاد والعشرات', Icons.pin_rounded),
-            _MenuItem('الكتابة', 'حروف وأرقام + لوحة كتابة', Icons.draw_rounded),
-            _MenuItem('الألوان', 'ألوان ورسوم قابلة للتلوين', Icons.palette_rounded),
+            _MenuItem('الأرقام', '١ إلى ٥٠ + النطق', Icons.pin_rounded),
+            _MenuItem('الكتابة', 'حروف وأرقام + لوحة ثابتة', Icons.draw_rounded),
+            _MenuItem('الألوان', 'ألوان ورسومات مطابقة قابلة للتلوين', Icons.palette_rounded),
             _MenuItem('الأشكال', 'مربع ومثلث ودائرة ومستطيل وخماسي وسداسي', Icons.category_rounded),
-            _MenuItem('القصص والألعاب', 'ألعاب تعليمية فعلية', Icons.auto_stories_rounded),
+            _MenuItem('القصص والألعاب', 'ألعاب حروف وأرقام مع النطق', Icons.auto_stories_rounded),
           ]
         : const <_MenuItem>[
             _MenuItem('الحروف', '٢٨ حرفًا عربيًا + صوت واسم', Icons.abc_rounded),
             _MenuItem('الأرقام', 'من ١ إلى ١٠ مع النطق', Icons.pin_rounded),
-            _MenuItem('الكتابة', 'حروف وأرقام مع لوحة كتابة', Icons.draw_rounded),
-            _MenuItem('الألوان', 'ألوان ورسوم قابلة للتلوين', Icons.palette_rounded),
+            _MenuItem('الكتابة', 'حروف وأرقام مع لوحة ثابتة', Icons.draw_rounded),
+            _MenuItem('الألوان', 'ألوان ورسومات مطابقة قابلة للتلوين', Icons.palette_rounded),
             _MenuItem('الأشكال', 'مربع ومثلث ودائرة ومستطيل', Icons.category_rounded),
-            _MenuItem('الألعاب', 'ألعاب حروف وأرقام فعلية', Icons.sports_esports_rounded),
+            _MenuItem('الألعاب', 'ألعاب حروف وأرقام مع النطق', Icons.sports_esports_rounded),
           ];
 
     return Directionality(
@@ -39,12 +39,7 @@ class KindergartenStageScreenV4 extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             for (final item in items) ...[
-              _MenuCard(
-                item.title,
-                item.subtitle,
-                item.icon,
-                () => _open(context, item.title),
-              ),
+              _MenuCard(item: item, onTap: () => _open(context, item.title)),
               const SizedBox(height: 12),
             ],
           ],
@@ -58,21 +53,23 @@ class KindergartenStageScreenV4 extends StatelessWidget {
     switch (title) {
       case 'الحروف':
         page = _LettersPage(kg2: kg2);
+        break;
       case 'الأرقام':
         page = _NumbersPage(kg2: kg2);
+        break;
       case 'الكتابة':
         page = _WritingPage(kg2: kg2);
+        break;
       case 'الألوان':
         page = _ColorsPage(kg2: kg2);
+        break;
       case 'الأشكال':
         page = _ShapesPage(kg2: kg2);
+        break;
       default:
         page = _GamesPage(kg2: kg2);
     }
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (_) => page),
-    );
+    Navigator.push(context, MaterialPageRoute<void>(builder: (_) => page));
   }
 }
 
@@ -85,37 +82,34 @@ class _MenuItem {
 }
 
 class _MenuCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
+  final _MenuItem item;
   final VoidCallback onTap;
 
-  const _MenuCard(this.title, this.subtitle, this.icon, this.onTap);
+  const _MenuCard({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
         child: Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: const LinearGradient(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
               colors: [Color(0xFF7652FF), Color(0xFF18A7E8)],
             ),
           ),
           child: Row(
             children: [
-              Icon(icon, color: Colors.white, size: 42),
+              Icon(item.icon, color: Colors.white, size: 42),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      item.title,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 21,
@@ -123,7 +117,7 @@ class _MenuCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      subtitle,
+                      item.subtitle,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -191,14 +185,19 @@ class _Btn extends StatelessWidget {
   final VoidCallback onTap;
   final bool selected;
 
-  const _Btn(this.text, this.color, this.onTap, {this.selected = false});
+  const _Btn(
+    this.text,
+    this.color,
+    this.onTap, {
+    this.selected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: selected ? color.withValues(alpha: .72) : color,
+        color: selected ? color.withAlpha(190) : color,
         borderRadius: BorderRadius.circular(15),
         border: selected
             ? Border.all(color: Colors.white, width: 3)
@@ -229,10 +228,12 @@ class _Btn extends StatelessWidget {
   }
 }
 
-String _ar(int number) => number.toString().replaceAllMapped(
-      RegExp(r'\d'),
-      (match) => '٠١٢٣٤٥٦٧٨٩'[int.parse(match.group(0)!)],
-    );
+String _ar(int number) {
+  return number.toString().replaceAllMapped(
+        RegExp(r'\d'),
+        (match) => '٠١٢٣٤٥٦٧٨٩'[int.parse(match.group(0)!)],
+      );
+}
 
 const _letters = <String>[
   'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص',
@@ -288,7 +289,9 @@ class _LettersState extends State<_LettersPage> {
   int index = 0;
   int form = 0;
 
-  void speak() => VoiceService.arabic(_sounds[index]);
+  void speak() {
+    VoiceService.arabic(_sounds[index]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -318,23 +321,11 @@ class _LettersState extends State<_LettersPage> {
               ),
             ),
           ),
-        Row(
-          children: [
-            Expanded(
-              child: _Btn(
-                'السابق',
-                const Color(0xFFE94F9B),
-                index > 0 ? () => setState(() => index--) : () {},
-              ),
-            ),
-            Expanded(
-              child: _Btn(
-                'التالي',
-                const Color(0xFF16B878),
-                index < 27 ? () => setState(() => index++) : () {},
-              ),
-            ),
-          ],
+        _NavigationButtons(
+          canPrevious: index > 0,
+          canNext: index < _letters.length - 1,
+          onPrevious: () => setState(() => index--),
+          onNext: () => setState(() => index++),
         ),
       ],
     );
@@ -375,6 +366,42 @@ class _NumbersPage extends StatelessWidget {
   }
 }
 
+class _NavigationButtons extends StatelessWidget {
+  final bool canPrevious;
+  final bool canNext;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+
+  const _NavigationButtons({
+    required this.canPrevious,
+    required this.canNext,
+    required this.onPrevious,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _Btn(
+            'السابق',
+            const Color(0xFFE94F9B),
+            canPrevious ? onPrevious : () {},
+          ),
+        ),
+        Expanded(
+          child: _Btn(
+            'التالي',
+            const Color(0xFF16B878),
+            canNext ? onNext : () {},
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _WritingPage extends StatefulWidget {
   final bool kg2;
 
@@ -387,12 +414,14 @@ class _WritingPage extends StatefulWidget {
 class _WritingState extends State<_WritingPage> {
   int tab = 0;
   int index = 0;
-  List<List<Offset>> strokes = [];
+  List<List<Offset>> strokes = <List<Offset>>[];
 
   String get text => tab == 0 ? _letters[index] : _ar(index + 1);
-  int get max => tab == 0 ? 28 : (widget.kg2 ? 50 : 10);
+  int get max => tab == 0 ? _letters.length : (widget.kg2 ? 50 : 10);
 
-  void clear() => setState(() => strokes = []);
+  void clear() {
+    setState(() => strokes = <List<Offset>>[]);
+  }
 
   void undo() {
     if (strokes.isNotEmpty) {
@@ -415,7 +444,7 @@ class _WritingState extends State<_WritingPage> {
                   () => setState(() {
                     tab = 0;
                     index = 0;
-                    strokes = [];
+                    strokes = <List<Offset>>[];
                   }),
                   selected: tab == 0,
                 ),
@@ -427,7 +456,7 @@ class _WritingState extends State<_WritingPage> {
                   () => setState(() {
                     tab = 1;
                     index = 0;
-                    strokes = [];
+                    strokes = <List<Offset>>[];
                   }),
                   selected: tab == 1,
                 ),
@@ -449,31 +478,377 @@ class _WritingState extends State<_WritingPage> {
             children: [
               Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)),
               Expanded(child: _Btn('🗑 مسح', const Color(0xFFE94F4F), clear)),
-              Expanded(
-                child: _Btn(
-                  '🔊 اسمع',
-                  const Color(0xFF16B878),
-                  () => VoiceService.arabic(text),
-                ),
-              ),
-              Expanded(
-                child: _Btn(
-                  'التالي',
-                  const Color(0xFF16B878),
-                  index < max - 1
-                      ? () => setState(() {
-                            index++;
-                            strokes = [];
-                          })
-                      : () {},
-                ),
-              ),
             ],
+          ),
+          _NavigationButtons(
+            canPrevious: index > 0,
+            canNext: index < max - 1,
+            onPrevious: () => setState(() {
+              index--;
+              strokes = <List<Offset>>[];
+            }),
+            onNext: () => setState(() {
+              index++;
+              strokes = <List<Offset>>[];
+            }),
           ),
         ],
       ),
     );
   }
+}
+
+class _ColorsPage extends StatefulWidget {
+  final bool kg2;
+
+  const _ColorsPage({required this.kg2});
+
+  @override
+  State<_ColorsPage> createState() => _ColorsState();
+}
+
+class _ColorItem {
+  final String name;
+  final Color color;
+
+  const _ColorItem(this.name, this.color);
+}
+
+const _colors = <_ColorItem>[
+  _ColorItem('أحمر', Color(0xFFE53935)),
+  _ColorItem('أزرق', Color(0xFF1E88E5)),
+  _ColorItem('أصفر', Color(0xFFFDD835)),
+  _ColorItem('أخضر', Color(0xFF43A047)),
+  _ColorItem('برتقالي', Color(0xFFFB8C00)),
+  _ColorItem('بنفسجي', Color(0xFF8E24AA)),
+  _ColorItem('بني', Color(0xFF6D4C41)),
+  _ColorItem('أسود', Color(0xFF212121)),
+  _ColorItem('أبيض', Color(0xFFF5F5F5)),
+  _ColorItem('وردي', Color(0xFFE91E63)),
+];
+
+class _ColorsState extends State<_ColorsPage> {
+  int selectedColor = 0;
+  int drawingIndex = 0;
+
+  static const drawings = <String>[
+    'سمكة',
+    'نعجة',
+    'قطة',
+    'تفاحة',
+    'شمس',
+    'فراشة',
+  ];
+
+  void speakColor() {
+    VoiceService.arabic(_colors[selectedColor].name);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _FixedPage(
+      'الألوان',
+      Column(
+        children: [
+          Text(
+            'اختر لونًا ثم اضغط على الرسم للتلوين',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
+          SizedBox(
+            height: 92,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _colors.length,
+              itemBuilder: (_, index) {
+                final item = _colors[index];
+                return GestureDetector(
+                  onTap: () {
+                    setState(() => selectedColor = index);
+                    VoiceService.arabic(item.name);
+                  },
+                  child: Container(
+                    width: 72,
+                    margin: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: item.color,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: index == selectedColor ? Colors.black : Colors.white,
+                        width: index == selectedColor ? 4 : 2,
+                      ),
+                    ),
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(3),
+                        color: Colors.black54,
+                        child: Text(
+                          item.name,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          _Btn('🔊 نطق اللون', const Color(0xFF18A7E8), speakColor),
+          Expanded(
+            child: _ColoringBoard(
+              kind: drawings[drawingIndex],
+              color: _colors[selectedColor].color,
+            ),
+          ),
+          Text(
+            drawings[drawingIndex],
+            style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w900),
+          ),
+          _NavigationButtons(
+            canPrevious: drawingIndex > 0,
+            canNext: drawingIndex < drawings.length - 1,
+            onPrevious: () => setState(() => drawingIndex--),
+            onNext: () => setState(() => drawingIndex++),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ColoringBoard extends StatelessWidget {
+  final String kind;
+  final Color color;
+
+  const _ColoringBoard({required this.kind, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        VoiceService.arabic(kind);
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.black26, width: 2),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: CustomPaint(
+          painter: _ColoringPainter(kind: kind, fillColor: color),
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+  }
+}
+
+class _ColoringPainter extends CustomPainter {
+  final String kind;
+  final Color fillColor;
+
+  const _ColoringPainter({required this.kind, required this.fillColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final outline = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeJoin = StrokeJoin.round;
+    final fill = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+    final center = Offset(size.width / 2, size.height / 2);
+    final w = size.width;
+    final h = size.height;
+
+    if (kind == 'سمكة') {
+      final body = Rect.fromCenter(center: center, width: w * .48, height: h * .38);
+      canvas.drawOval(body, fill);
+      canvas.drawOval(body, outline);
+      final tail = Path()
+        ..moveTo(w * .26, h * .5)
+        ..lineTo(w * .08, h * .34)
+        ..lineTo(w * .08, h * .66)
+        ..close();
+      canvas.drawPath(tail, fill);
+      canvas.drawPath(tail, outline);
+      canvas.drawCircle(Offset(w * .62, h * .45), 6, Paint()..color = Colors.black);
+    } else if (kind == 'نعجة') {
+      final body = RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(w * .48, h * .53), width: w * .55, height: h * .3),
+        const Radius.circular(55),
+      );
+      canvas.drawRRect(body, fill);
+      canvas.drawRRect(body, outline);
+      canvas.drawCircle(Offset(w * .76, h * .5), h * .12, fill);
+      canvas.drawCircle(Offset(w * .76, h * .5), h * .12, outline);
+      canvas.drawCircle(Offset(w * .79, h * .47), 5, Paint()..color = Colors.black);
+      for (final x in <double>[.3, .45, .58]) {
+        canvas.drawLine(Offset(w * x, h * .68), Offset(w * x, h * .82), outline);
+      }
+    } else if (kind == 'قطة') {
+      final head = Path()
+        ..moveTo(w * .32, h * .42)
+        ..lineTo(w * .28, h * .22)
+        ..lineTo(w * .42, h * .31)
+        ..quadraticBezierTo(w * .5, h * .26, w * .58, h * .31)
+        ..lineTo(w * .72, h * .22)
+        ..lineTo(w * .68, h * .42)
+        ..quadraticBezierTo(w * .75, h * .72, w * .5, h * .76)
+        ..quadraticBezierTo(w * .25, h * .72, w * .32, h * .42)
+        ..close();
+      canvas.drawPath(head, fill);
+      canvas.drawPath(head, outline);
+      canvas.drawCircle(Offset(w * .43, h * .46), 5, Paint()..color = Colors.black);
+      canvas.drawCircle(Offset(w * .57, h * .46), 5, Paint()..color = Colors.black);
+    } else if (kind == 'تفاحة') {
+      final apple = Path()
+        ..moveTo(w * .5, h * .3)
+        ..cubicTo(w * .25, h * .18, w * .18, h * .48, w * .3, h * .67)
+        ..cubicTo(w * .38, h * .82, w * .62, h * .82, w * .7, h * .67)
+        ..cubicTo(w * .82, h * .48, w * .75, h * .18, w * .5, h * .3)
+        ..close();
+      canvas.drawPath(apple, fill);
+      canvas.drawPath(apple, outline);
+      canvas.drawLine(Offset(w * .5, h * .3), Offset(w * .54, h * .17), outline);
+    } else if (kind == 'شمس') {
+      canvas.drawCircle(center, math.min(w, h) * .22, fill);
+      canvas.drawCircle(center, math.min(w, h) * .22, outline);
+      for (var i = 0; i < 12; i++) {
+        final angle = i * math.pi / 6;
+        final a = Offset(
+          center.dx + math.cos(angle) * math.min(w, h) * .28,
+          center.dy + math.sin(angle) * math.min(w, h) * .28,
+        );
+        final b = Offset(
+          center.dx + math.cos(angle) * math.min(w, h) * .4,
+          center.dy + math.sin(angle) * math.min(w, h) * .4,
+        );
+        canvas.drawLine(a, b, outline);
+      }
+    } else {
+      final left = Path()
+        ..moveTo(center.dx, center.dy)
+        ..cubicTo(w * .16, h * .22, w * .12, h * .62, center.dx, h * .76)
+        ..close();
+      final right = Path()
+        ..moveTo(center.dx, center.dy)
+        ..cubicTo(w * .84, h * .22, w * .88, h * .62, center.dx, h * .76)
+        ..close();
+      canvas.drawPath(left, fill);
+      canvas.drawPath(right, fill);
+      canvas.drawPath(left, outline);
+      canvas.drawPath(right, outline);
+      canvas.drawLine(Offset(center.dx, h * .2), Offset(center.dx, h * .8), outline);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ColoringPainter oldDelegate) {
+    return oldDelegate.kind != kind || oldDelegate.fillColor != fillColor;
+  }
+}
+
+class _ShapesPage extends StatefulWidget {
+  final bool kg2;
+
+  const _ShapesPage({required this.kg2});
+
+  @override
+  State<_ShapesPage> createState() => _ShapesState();
+}
+
+class _ShapesState extends State<_ShapesPage> {
+  int index = 0;
+
+  List<String> get names => widget.kg2
+      ? const ['مربع', 'مثلث', 'دائرة', 'مستطيل', 'خماسي', 'سداسي']
+      : const ['مربع', 'مثلث', 'دائرة', 'مستطيل'];
+
+  @override
+  Widget build(BuildContext context) {
+    final name = names[index];
+    return _FixedPage(
+      'الأشكال',
+      Column(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => VoiceService.arabic(name),
+              child: CustomPaint(
+                painter: _ShapePainter(name),
+                child: const SizedBox.expand(),
+              ),
+            ),
+          ),
+          Text(name, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w900)),
+          _Btn('🔊 نطق الشكل', const Color(0xFF18A7E8), () => VoiceService.arabic(name)),
+          _NavigationButtons(
+            canPrevious: index > 0,
+            canNext: index < names.length - 1,
+            onPrevious: () => setState(() => index--),
+            onNext: () => setState(() => index++),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShapePainter extends CustomPainter {
+  final String name;
+
+  const _ShapePainter(this.name);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF7652FF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 8
+      ..strokeJoin = StrokeJoin.round;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) * .25;
+
+    if (name == 'مربع') {
+      canvas.drawRect(Rect.fromCenter(center: center, width: radius * 1.5, height: radius * 1.5), paint);
+    } else if (name == 'مستطيل') {
+      canvas.drawRect(Rect.fromCenter(center: center, width: radius * 2.1, height: radius * 1.2), paint);
+    } else if (name == 'دائرة') {
+      canvas.drawCircle(center, radius, paint);
+    } else {
+      final sides = name == 'خماسي' ? 5 : (name == 'سداسي' ? 6 : 3);
+      final path = Path();
+      for (var i = 0; i < sides; i++) {
+        final angle = -math.pi / 2 + i * 2 * math.pi / sides;
+        final point = Offset(
+          center.dx + math.cos(angle) * radius,
+          center.dy + math.sin(angle) * radius,
+        );
+        if (i == 0) {
+          path.moveTo(point.dx, point.dy);
+        } else {
+          path.lineTo(point.dx, point.dy);
+        }
+      }
+      path.close();
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ShapePainter oldDelegate) => oldDelegate.name != name;
 }
 
 class _DrawingBoard extends StatefulWidget {
@@ -492,478 +867,87 @@ class _DrawingBoard extends StatefulWidget {
 }
 
 class _DrawingBoardState extends State<_DrawingBoard> {
-  List<Offset> current = [];
+  List<Offset> current = <Offset>[];
 
-  void add(Offset point) {
-    setState(() => current = [...current, point]);
+  void start(DragStartDetails details) {
+    current = <Offset>[details.localPosition];
+    setState(() {});
   }
 
-  void finish() {
-    if (current.isEmpty) return;
-    widget.onChanged([...widget.strokes, current]);
-    setState(() => current = []);
+  void update(DragUpdateDetails details) {
+    current = <Offset>[...current, details.localPosition];
+    setState(() {});
+  }
+
+  void end(DragEndDetails details) {
+    if (current.isEmpty) {
+      return;
+    }
+    final result = <List<Offset>>[...widget.strokes, List<Offset>.from(current)];
+    current = <Offset>[];
+    widget.onChanged(result);
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
+    final all = <List<Offset>>[...widget.strokes, if (current.isNotEmpty) current];
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
         color: Colors.white,
-        border: Border.all(color: const Color(0xFFBDBDBD), width: 2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onPanStart: (details) => add(details.localPosition),
-        onPanUpdate: (details) => add(details.localPosition),
-        onPanEnd: (_) => finish(),
-        child: CustomPaint(
-          painter: _StrokePainter(
-            [...widget.strokes, if (current.isNotEmpty) current],
-            widget.color,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onPanStart: start,
+          onPanUpdate: update,
+          onPanEnd: end,
+          child: CustomPaint(
+            painter: _BoardPainter(strokes: all, color: widget.color),
+            child: const SizedBox.expand(),
           ),
-          child: const SizedBox.expand(),
         ),
       ),
     );
   }
 }
 
-class _StrokePainter extends CustomPainter {
+class _BoardPainter extends CustomPainter {
   final List<List<Offset>> strokes;
   final Color color;
 
-  _StrokePainter(this.strokes, this.color);
+  const _BoardPainter({required this.strokes, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
+    final border = Paint()
+      ..color = Colors.black26
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawRect(Offset.zero & size, border);
+
+    final pen = Paint()
       ..color = color
-      ..strokeWidth = 8
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
       ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
+      ..strokeJoin = StrokeJoin.round;
 
     for (final stroke in strokes) {
       if (stroke.length == 1) {
-        canvas.drawCircle(stroke.first, 4, paint);
-      } else if (stroke.length > 1) {
-        final path = Path()..moveTo(stroke.first.dx, stroke.first.dy);
-        for (final point in stroke.skip(1)) {
-          path.lineTo(point.dx, point.dy);
-        }
-        canvas.drawPath(path, paint);
+        canvas.drawCircle(stroke.first, 3, pen);
+        continue;
       }
+      final path = Path()..moveTo(stroke.first.dx, stroke.first.dy);
+      for (final point in stroke.skip(1)) {
+        path.lineTo(point.dx, point.dy);
+      }
+      canvas.drawPath(path, pen);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _StrokePainter oldDelegate) => true;
-}
-
-class _ColorsPage extends StatefulWidget {
-  final bool kg2;
-
-  const _ColorsPage({required this.kg2});
-
-  @override
-  State<_ColorsPage> createState() => _ColorsState();
-}
-
-class _ColorsState extends State<_ColorsPage> {
-  int drawing = 0;
-  Color selected = const Color(0xFFF44336);
-
-  final colors = const [
-    Color(0xFFF44336),
-    Color(0xFF2196F3),
-    Color(0xFFFFC107),
-    Color(0xFF4CAF50),
-    Color(0xFFFF8A00),
-    Color(0xFF8E5CF6),
-    Color(0xFF00AFA5),
-  ];
-
-  final names = const [
-    'أحمر',
-    'أزرق',
-    'أصفر',
-    'أخضر',
-    'برتقالي',
-    'بنفسجي',
-    'تركوازي',
-  ];
-
-  late final List<String> drawings = widget.kg2
-      ? ['قطة']
-      : ['قطة', 'سمكة', 'فراشة'];
-
-  List<Color> fills = List<Color>.filled(6, Colors.white);
-
-  void choose(int index) {
-    setState(() => selected = colors[index]);
-    VoiceService.arabic(names[index]);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _FixedPage(
-      'الألوان والتلوين',
-      Column(
-        children: [
-          Text(
-            'اختر اللون: ${names[colors.indexOf(selected)]}',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-          ),
-          SizedBox(
-            height: 55,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                colors.length,
-                (index) => GestureDetector(
-                  onTap: () => choose(index),
-                  child: Container(
-                    width: 38,
-                    height: 38,
-                    margin: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: colors[index],
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: selected == colors[index]
-                            ? Colors.black
-                            : Colors.transparent,
-                        width: 3,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Text(
-            'لوّن ${drawings[drawing]}',
-            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-          ),
-          Expanded(
-            child: _ColoringCanvas(
-              type: drawing,
-              fills: fills,
-              selected: selected,
-              onChanged: (value) => setState(() => fills = value),
-            ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: _Btn(
-                  '🗑 مسح',
-                  const Color(0xFFE94F4F),
-                  () => setState(
-                    () => fills = List<Color>.filled(6, Colors.white),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: _Btn(
-                  'التالي',
-                  const Color(0xFF16B878),
-                  drawing < drawings.length - 1
-                      ? () => setState(() {
-                            drawing++;
-                            fills = List<Color>.filled(6, Colors.white);
-                          })
-                      : () {},
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ColoringCanvas extends StatelessWidget {
-  final int type;
-  final List<Color> fills;
-  final Color selected;
-  final ValueChanged<List<Color>> onChanged;
-
-  const _ColoringCanvas({
-    required this.type,
-    required this.fills,
-    required this.selected,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (_, constraints) {
-        final size = constraints.biggest;
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (details) {
-            final region = _AnimalGeometry(type).hit(details.localPosition, size);
-            if (region != null) {
-              final next = [...fills];
-              next[region] = selected;
-              onChanged(next);
-            }
-          },
-          child: CustomPaint(
-            painter: _ColoringPainter(type, fills),
-            child: const SizedBox.expand(),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _AnimalGeometry {
-  final int type;
-
-  _AnimalGeometry(this.type);
-
-  int? hit(Offset point, Size size) {
-    final x = size.width / 2;
-    final y = size.height / 2;
-
-    if (type == 0) {
-      if (Rect.fromCenter(
-        center: Offset(x, y - 35),
-        width: 125,
-        height: 100,
-      ).contains(point)) return 0;
-      final ear = Path()
-        ..moveTo(x - 55, y - 75)
-        ..lineTo(x - 35, y - 135)
-        ..lineTo(x - 5, y - 85)
-        ..close();
-      if (ear.contains(point)) return 1;
-      if (Rect.fromCenter(
-        center: Offset(x, y + 55),
-        width: 210,
-        height: 120,
-      ).contains(point)) return 2;
-    } else if (type == 1) {
-      if (Rect.fromCenter(
-        center: Offset(x, y),
-        width: 230,
-        height: 125,
-      ).contains(point)) return 0;
-      if (Rect.fromCenter(
-        center: Offset(x + 125, y - 5),
-        width: 75,
-        height: 65,
-      ).contains(point)) return 1;
-      if (Rect.fromCenter(
-        center: Offset(x - 120, y),
-        width: 65,
-        height: 45,
-      ).contains(point)) return 2;
-    } else {
-      if (Rect.fromCenter(
-        center: Offset(x, y),
-        width: 110,
-        height: 180,
-      ).contains(point)) return 0;
-      if (Rect.fromCenter(
-        center: Offset(x - 70, y - 45),
-        width: 90,
-        height: 110,
-      ).contains(point)) return 1;
-      if (Rect.fromCenter(
-        center: Offset(x + 70, y - 45),
-        width: 90,
-        height: 110,
-      ).contains(point)) return 2;
-    }
-    return null;
-  }
-}
-
-class _ColoringPainter extends CustomPainter {
-  final int type;
-  final List<Color> fills;
-
-  _ColoringPainter(this.type, this.fills);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final fill = Paint()..style = PaintingStyle.fill;
-    final outline = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
-      ..color = Colors.black87;
-    final x = size.width / 2;
-    final y = size.height / 2;
-
-    if (type == 0) {
-      fill.color = fills[2];
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, y + 55), width: 210, height: 120),
-        fill,
-      );
-      fill.color = fills[0];
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, y - 35), width: 125, height: 100),
-        fill,
-      );
-      fill.color = fills[1];
-      final ear = Path()
-        ..moveTo(x - 55, y - 75)
-        ..lineTo(x - 35, y - 135)
-        ..lineTo(x - 5, y - 85)
-        ..close();
-      canvas.drawPath(ear, fill);
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, y + 55), width: 210, height: 120),
-        outline,
-      );
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, y - 35), width: 125, height: 100),
-        outline,
-      );
-      canvas.drawPath(ear, outline);
-    } else if (type == 1) {
-      fill.color = fills[0];
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, y), width: 230, height: 125),
-        fill,
-      );
-      fill.color = fills[1];
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x + 125, y - 5), width: 75, height: 65),
-        fill,
-      );
-      fill.color = fills[2];
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x - 120, y), width: 65, height: 45),
-        fill,
-      );
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, y), width: 230, height: 125),
-        outline,
-      );
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x + 125, y - 5), width: 75, height: 65),
-        outline,
-      );
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x - 120, y), width: 65, height: 45),
-        outline,
-      );
-    } else {
-      fill.color = fills[0];
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, y), width: 110, height: 180),
-        fill,
-      );
-      fill.color = fills[1];
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x - 70, y - 45), width: 90, height: 110),
-        fill,
-      );
-      fill.color = fills[2];
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x + 70, y - 45), width: 90, height: 110),
-        fill,
-      );
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, y), width: 110, height: 180),
-        outline,
-      );
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x - 70, y - 45), width: 90, height: 110),
-        outline,
-      );
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x + 70, y - 45), width: 90, height: 110),
-        outline,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _ColoringPainter oldDelegate) => true;
-}
-
-class _ShapesPage extends StatelessWidget {
-  final bool kg2;
-
-  const _ShapesPage({required this.kg2});
-
-  @override
-  Widget build(BuildContext context) {
-    final names = kg2
-        ? const ['مربع', 'مثلث', 'دائرة', 'مستطيل', 'خماسي', 'سداسي']
-        : const ['مربع', 'مثلث', 'دائرة', 'مستطيل'];
-    return _Page(
-      'الأشكال',
-      [
-        for (final name in names)
-          _Btn(
-            name,
-            const Color(0xFF7652FF),
-            () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => _ShapeDrawPage(name: name),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _ShapeDrawPage extends StatefulWidget {
-  final String name;
-
-  const _ShapeDrawPage({required this.name});
-
-  @override
-  State<_ShapeDrawPage> createState() => _ShapeDrawState();
-}
-
-class _ShapeDrawState extends State<_ShapeDrawPage> {
-  List<List<Offset>> strokes = [];
-
-  void undo() {
-    if (strokes.isNotEmpty) setState(() => strokes.removeLast());
-  }
-
-  void clear() => setState(() => strokes = []);
-
-  @override
-  Widget build(BuildContext context) {
-    return _FixedPage(
-      'رسم ${widget.name}',
-      Column(
-        children: [
-          Text(
-            'ارسم ${widget.name} داخل المساحة',
-            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900),
-          ),
-          Expanded(
-            child: _DrawingBoard(
-              strokes: strokes,
-              color: Colors.black,
-              onChanged: (value) => setState(() => strokes = value),
-            ),
-          ),
-          Row(
-            children: [
-              Expanded(child: _Btn('↩ تراجع', const Color(0xFF7652FF), undo)),
-              Expanded(child: _Btn('🗑 مسح', const Color(0xFFE94F4F), clear)),
-            ],
-          ),
-        ],
-      ),
-    );
+  bool shouldRepaint(covariant _BoardPainter oldDelegate) {
+    return oldDelegate.strokes != strokes || oldDelegate.color != color;
   }
 }
 
@@ -979,7 +963,7 @@ class _GamesPage extends StatelessWidget {
       [
         _Btn(
           '🔤 لعبة الحروف',
-          const Color(0xFFE94F9B),
+          const Color(0xFF7652FF),
           () => Navigator.push(
             context,
             MaterialPageRoute<void>(builder: (_) => const _LetterGame()),
@@ -990,9 +974,7 @@ class _GamesPage extends StatelessWidget {
           const Color(0xFF16B878),
           () => Navigator.push(
             context,
-            MaterialPageRoute<void>(
-              builder: (_) => _NumberGame(max: kg2 ? 50 : 20),
-            ),
+            MaterialPageRoute<void>(builder: (_) => _NumberGame(max: kg2 ? 50 : 20)),
           ),
         ),
       ],
@@ -1008,10 +990,10 @@ class _LetterGame extends StatefulWidget {
 }
 
 class _LetterGameState extends State<_LetterGame> {
-  final random = math.Random();
+  final math.Random random = math.Random();
   int target = 0;
   int score = 0;
-  List<String> options = [];
+  List<String> options = <String>[];
 
   @override
   void initState() {
@@ -1028,7 +1010,9 @@ class _LetterGameState extends State<_LetterGame> {
     options = choices.toList()..shuffle(random);
   }
 
-  void speak() => VoiceService.arabic(_sounds[target]);
+  void speak() {
+    VoiceService.arabic(_sounds[target]);
+  }
 
   void answer(String value) {
     if (value != _letters[target]) {
@@ -1048,15 +1032,16 @@ class _LetterGameState extends State<_LetterGame> {
     return _Page(
       'لعبة الحروف',
       [
-        const Text('استمع ثم اختر الحرف الصحيح', textAlign: TextAlign.center),
+        const Text('استمع إلى السؤال ثم اختر الحرف الصحيح', textAlign: TextAlign.center),
         _Btn('🔊 نطق السؤال', const Color(0xFF18A7E8), speak),
         Text('النقاط: ${_ar(score)}'),
+        Text(
+          'السؤال: ${_ar(target + 1)}',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+        ),
         for (final value in options)
-          _Btn(
-            value,
-            const Color(0xFF7652FF),
-            () => answer(value),
-          ),
+          _Btn(value, const Color(0xFF7652FF), () => answer(value)),
       ],
     );
   }
@@ -1072,10 +1057,10 @@ class _NumberGame extends StatefulWidget {
 }
 
 class _NumberGameState extends State<_NumberGame> {
-  final random = math.Random();
+  final math.Random random = math.Random();
   int target = 1;
   int score = 0;
-  List<int> options = [];
+  List<int> options = <int>[];
 
   @override
   void initState() {
@@ -1092,7 +1077,9 @@ class _NumberGameState extends State<_NumberGame> {
     options = choices.toList()..shuffle(random);
   }
 
-  void speak() => VoiceService.arabic(_ar(target));
+  void speak() {
+    VoiceService.arabic(_ar(target));
+  }
 
   void answer(int value) {
     if (value != target) {
@@ -1112,14 +1099,17 @@ class _NumberGameState extends State<_NumberGame> {
     return _Page(
       'لعبة الأرقام',
       [
-        const Text('استمع ثم اختر الرقم الصحيح', textAlign: TextAlign.center),
+        const Text('استمع إلى السؤال ثم اختر الرقم الصحيح', textAlign: TextAlign.center),
         _Btn('🔊 نطق السؤال', const Color(0xFF18A7E8), speak),
         Text('النقاط: ${_ar(score)}'),
+        Text(
+          'السؤال: ${_ar(target)}',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+        ),
         for (final value in options)
-          _Btn(
-            _ar(value),
-            const Color(0xFF16B878),
-            () => answer(value),
-          ),
+          _Btn(_ar(value), const Color(0xFF16B878), () => answer(value)),
       ],
     );
+  }
+}
