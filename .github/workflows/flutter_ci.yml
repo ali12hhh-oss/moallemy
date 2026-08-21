@@ -7,7 +7,7 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   analyze-test-build:
@@ -16,12 +16,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
+
+      - name: Repair truncated kindergarten screen
+        shell: bash
+        run: |
+          set -euo pipefail
+          file="lib/features/children/kindergarten_stage_screen_v4.dart"
+          if [ -f "$file" ]; then
+            tail_text="$(tail -n 8 "$file")"
+            if printf '%s\n' "$tail_text" | grep -q "_Btn(_ar(value), const Color(0xFF16B878), () => answer(value))," && ! printf '%s\n' "$tail_text" | grep -q '^}$'; then
+              printf '\n  }\n}\n' >> "$file"
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add "$file"
+              git commit -m "fix: close truncated kindergarten screen"
+              git push
+            fi
+          fi
 
       - name: Verify Android project
         run: |
