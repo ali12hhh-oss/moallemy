@@ -25,41 +25,79 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Repair truncated kindergarten screen
+      - name: Repair kindergarten source deterministically
         shell: bash
         run: |
           set -euo pipefail
           file="lib/features/children/kindergarten_stage_screen_v4.dart"
-          if [ -f "$file" ]; then
-            tail_text="$(tail -n 8 "$file")"
-            if printf '%s\n' "$tail_text" | grep -q "_Btn(_ar(value), const Color(0xFF16B878), () => answer(value))," && ! printf '%s\n' "$tail_text" | grep -q '^}$'; then
-              printf '\n  }\n}\n' >> "$file"
-              git config user.name "github-actions[bot]"
-              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-              git add "$file"
-              git commit -m "fix: close truncated kindergarten screen"
 
-              # The repository may receive another commit while this job is running.
-              # Rebase before pushing, and retry so the repair cannot fail only because
-              # the remote branch advanced during the build.
-              pushed=false
-              for attempt in 1 2 3 4 5; do
-                git fetch origin main
-                if ! git rebase origin/main; then
-                  git rebase --abort || true
-                  echo "Rebase failed on attempt $attempt; retrying from the current remote state."
-                elif git push origin HEAD:main; then
+          repair_file() {
+            python3 - "$file" <<'PY'
+          from pathlib import Path
+          import sys
+
+          path = Path(sys.argv[1])
+          text = path.read_text(encoding='utf-8')
+          original = text
+          stripped = text.rstrip()
+
+          # The file ends in _NumberGameState.build(). Its valid tail must be:
+          #   ],
+          # );
+          # }
+          # }
+          # Normalize only this final tail; do not rewrite the rest of the file.
+          if not stripped.endswith('}'):
+              if stripped.endswith(');'):
+                  stripped += '\n  }\n}'
+              elif stripped.endswith('],'):
+                  stripped += '\n    );\n  }\n}'
+              else:
+                  raise SystemExit('ERROR: kindergarten file has an unexpected ending; refusing to guess.')
+
+          if not stripped.endswith('\n'):
+              stripped += '\n'
+
+          if stripped != original:
+              path.write_text(stripped, encoding='utf-8')
+              print('Kindergarten source tail repaired.')
+          else:
+              print('Kindergarten source tail already complete.')
+          PY
+          }
+
+          repair_file
+
+          if ! git diff --quiet -- "$file"; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add "$file"
+            git commit -m "fix: repair kindergarten source tail"
+
+            # Persist the repair without losing commits that arrive concurrently.
+            pushed=false
+            for attempt in 1 2 3 4 5; do
+              git fetch origin main
+              if ! git rebase origin/main; then
+                git rebase --abort || true
+                echo "Rebase failed on attempt $attempt; retrying."
+              else
+                repair_file
+                if ! git diff --quiet -- "$file"; then
+                  git add "$file"
+                  git commit --amend --no-edit
+                fi
+                if git push origin HEAD:main; then
                   pushed=true
                   break
-                else
-                  echo "Push rejected on attempt $attempt; the remote advanced. Retrying."
                 fi
-                sleep 2
-              done
-              if [ "$pushed" != true ]; then
-                echo "ERROR: Could not persist the kindergarten repair after 5 attempts."
-                exit 1
+                echo "Push rejected on attempt $attempt; remote advanced."
               fi
+              sleep 2
+            done
+            if [ "$pushed" != true ]; then
+              echo "ERROR: Could not persist kindergarten source repair after 5 attempts."
+              exit 1
             fi
           fi
 
