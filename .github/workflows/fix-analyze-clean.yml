@@ -1,67 +1,44 @@
-name: Fix analyze clean
+name: Kindergarten palette cleanup
 on:
   push:
     branches: [main]
 permissions:
   contents: write
 jobs:
-  fix:
+  cleanup:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-      - name: Fix exact syntax errors and apply Dart fixes
+      - name: Remove incorrect pink palette and mismatched coloring drawings
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('lib/features/children/kindergarten_stage_screen_v4.dart')
           t = p.read_text(encoding='utf-8')
-          t = t.replace('..scaleByDouble(1.02)', '..scaleByDouble(1.02, 1.02, 1.02, 1.0)')
-          old = "GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), itemCount: max, gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10), itemBuilder: (_, i) => App3DCard(onTap: () => VoiceService.arabic(_numberName(i + 1)), encouragement: '🔊 ${arNum(i + 1)}', child: Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF18A7E8), Color(0xFF42A5F5)]), borderRadius: BorderRadius.all(Radius.circular(20))), child: Center(child: Text(arNum(i + 1), style: const TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w900)))))) ,"
-          new = """GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: max,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemBuilder: (_, i) => App3DCard(
-          onTap: () => VoiceService.arabic(_numberName(i + 1)),
-          encouragement: '🔊 ${arNum(i + 1)}',
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [Color(0xFF18A7E8), Color(0xFF42A5F5)]),
-              borderRadius: BorderRadius.all(Radius.circular(20)),
-            ),
-            child: Center(
-              child: Text(
-                arNum(i + 1),
-                style: const TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w900),
-              ),
-            ),
-          ),
-        ),
-      ),"""
-          if old not in t:
-              raise SystemExit('Expected numbers GridView block was not found')
-          t = t.replace(old, new, 1)
+
+          t = t.replace(
+              'static const colors = <Color>[Colors.black, Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.pink];',
+              'static const colors = <Color>[Colors.black, Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple];',
+          )
+          t = t.replace(
+              "  final colors = const <Color>[Color(0xFFF44336), Color(0xFF2196F3), Color(0xFFFFC107), Color(0xFF4CAF50), Color(0xFFFF8A00), Color(0xFF8E5CF6), Color(0xFFE91E63), Color(0xFF00AFA5)];\n  final names = const ['أحمر','أزرق','أصفر','أخضر','برتقالي','بنفسجي','وردي','تركوازي'];",
+              "  final colors = const <Color>[Color(0xFFF44336), Color(0xFF2196F3), Color(0xFFFFC107), Color(0xFF4CAF50), Color(0xFFFF8A00), Color(0xFF8E5CF6), Color(0xFF00AFA5)];\n  final names = const ['أحمر','أزرق','أصفر','أخضر','برتقالي','بنفسجي','تركوازي'];",
+          )
+          t = t.replace("  final drawings = const ['قطة','سمكة','أرنب','فراشة','فيل'];", "  final drawings = const ['قطة'];")
+          t = t.replace("String drawingsLabel(int i) => const ['قطة','سمكة','أرنب','فراشة','فيل'][i];", "String drawingsLabel(int i) => const ['قطة'][i];")
+
           p.write_text(t, encoding='utf-8')
           PY
-          dart fix --apply lib/features/children/kindergarten_stage_screen_v4.dart lib/features/quiz/final_exam_screen_v8.dart || true
-          dart format lib/features/children/kindergarten_stage_screen_v4.dart lib/features/quiz/final_exam_screen_v8.dart
-          flutter analyze
-      - name: Commit fixes and remove temporary workflow
+          dart format lib/features/children/kindergarten_stage_screen_v4.dart
+          flutter analyze --fatal-warnings
+      - name: Commit changes and remove temporary workflow
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/features/children/kindergarten_stage_screen_v4.dart lib/features/quiz/final_exam_screen_v8.dart
-          git commit -m "fix: clean remaining Dart analyze issues" || true
+          git add lib/features/children/kindergarten_stage_screen_v4.dart
+          git commit -m "fix: remove incorrect pink and mismatched coloring drawings" || true
           git rm -f .github/workflows/fix-analyze-clean.yml || true
-          git commit -m "chore: remove temporary analyze fixer" || true
+          git commit -m "chore: remove temporary cleanup workflow" || true
           git push || true
