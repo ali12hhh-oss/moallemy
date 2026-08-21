@@ -32,8 +32,6 @@ android {
 
     buildTypes {
         release {
-            // Release is intentionally unsigned until a private keystore is supplied.
-            // GitHub Actions can build an unsigned release APK safely.
             signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = false
             isShrinkResources = false
@@ -53,31 +51,4 @@ android {
 
 flutter {
     source = "../.."
-}
-
-// Modern AGP plugin DSL can leave release artifacts inside android/app/build.
-// Flutter CLI expects them under the project-root build/ directory, so copy
-// both release artifacts after Gradle finishes.
-val flutterProjectRoot = rootProject.projectDir.parentFile
-val flutterApkOutputDir = File(flutterProjectRoot, "build/app/outputs/flutter-apk")
-val flutterBundleOutputDir = File(flutterProjectRoot, "build/app/outputs/bundle/release")
-
-val copyReleaseApkForFlutter = tasks.register<Copy>("copyReleaseApkForFlutter") {
-    from(layout.buildDirectory.dir("outputs/apk/release"))
-    include("app-release.apk")
-    into(flutterApkOutputDir)
-}
-
-tasks.named("assembleRelease") {
-    finalizedBy(copyReleaseApkForFlutter)
-}
-
-val copyReleaseAabForFlutter = tasks.register<Copy>("copyReleaseAabForFlutter") {
-    from(layout.buildDirectory.dir("outputs/bundle/release"))
-    include("app-release.aab")
-    into(flutterBundleOutputDir)
-}
-
-tasks.named("bundleRelease") {
-    finalizedBy(copyReleaseAabForFlutter)
 }
