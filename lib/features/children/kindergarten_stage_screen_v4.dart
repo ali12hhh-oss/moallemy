@@ -1123,4 +1123,3 @@ class _NumberGameState extends State<_NumberGame> {
           ),
       ],
     );
-  }
