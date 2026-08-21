@@ -6,4 +6,3 @@ import '../../widgets/app_feedback.dart';
 
 // Temporary syntax repair: preserve the existing implementation while closing
 // the final widget/class scope that was left open.
-
