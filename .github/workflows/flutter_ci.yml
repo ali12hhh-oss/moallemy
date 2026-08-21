@@ -6,7 +6,6 @@ on:
     branches: [ main, master ]
   pull_request:
 
-# CI must never modify or push to the source branch.
 permissions:
   contents: read
 
@@ -43,45 +42,52 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Build APK
-        run: flutter build apk --release
+      # Do not use `flutter build apk` here. The Android Gradle build is
+      # completing, but the Flutter CLI cannot find the APK in this project
+      # layout. Build the real Gradle release task and verify its output directly.
+      - name: Build APK with Gradle
+        working-directory: android
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace app:assembleRelease
 
       - name: Locate and verify APK
         shell: bash
         run: |
           set -euo pipefail
-          echo "APK files produced by the build:"
-          find build -type f -name '*.apk' -print | sort
-          apk="$(find build -type f -name 'app-release.apk' -print -quit)"
+          echo "APK files produced by Gradle:"
+          find android/app/build -type f -name '*.apk' -print | sort
+          apk="$(find android/app/build -type f -name 'app-release.apk' -print -quit)"
           if [ -z "$apk" ]; then
-            echo "ERROR: app-release.apk was not produced anywhere under build/."
+            echo "ERROR: app-release.apk was not produced by Gradle."
             exit 1
           fi
           mkdir -p build/app/outputs/flutter-apk
-          if [ "$apk" != "build/app/outputs/flutter-apk/app-release.apk" ]; then
-            cp "$apk" build/app/outputs/flutter-apk/app-release.apk
-          fi
+          cp "$apk" build/app/outputs/flutter-apk/app-release.apk
           test -s build/app/outputs/flutter-apk/app-release.apk
           ls -lh build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Build AAB
-        run: flutter build appbundle --release
+      - name: Build AAB with Gradle
+        working-directory: android
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace app:bundleRelease
 
       - name: Verify AAB
         shell: bash
         run: |
           set -euo pipefail
-          echo "AAB files produced by the build:"
-          find build -type f -name '*.aab' -print | sort
-          aab="$(find build -type f -name 'app-release.aab' -print -quit)"
+          echo "AAB files produced by Gradle:"
+          find android/app/build -type f -name '*.aab' -print | sort
+          aab="$(find android/app/build -type f -name 'app-release.aab' -print -quit)"
           if [ -z "$aab" ]; then
-            echo "ERROR: app-release.aab was not produced anywhere under build/."
+            echo "ERROR: app-release.aab was not produced by Gradle."
             exit 1
           fi
           mkdir -p build/app/outputs/bundle/release
-          if [ "$aab" != "build/app/outputs/bundle/release/app-release.aab" ]; then
-            cp "$aab" build/app/outputs/bundle/release/app-release.aab
-          fi
+          cp "$aab" build/app/outputs/bundle/release/app-release.aab
           test -s build/app/outputs/bundle/release/app-release.aab
           ls -lh build/app/outputs/bundle/release/app-release.aab
 
