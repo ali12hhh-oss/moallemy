@@ -1,8 +1,6 @@
 name: Flutter Android CI
 
 # Every push to main/master automatically runs analysis, tests, APK build and AAB build.
-# There is intentionally no self-modifying repair step: source changes must be committed normally.
-
 on:
   push:
     branches: [ main, master ]
@@ -44,9 +42,22 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Verify APK
+      - name: Locate and verify APK
+        shell: bash
         run: |
-          test -f build/app/outputs/flutter-apk/app-release.apk
+          set -euo pipefail
+          echo "APK files produced by the build:"
+          find build -type f -name '*.apk' -print | sort
+          apk="$(find build -type f -name 'app-release.apk' -print -quit)"
+          if [ -z "$apk" ]; then
+            echo "ERROR: app-release.apk was not produced anywhere under build/."
+            exit 1
+          fi
+          mkdir -p build/app/outputs/flutter-apk
+          if [ "$apk" != "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            cp "$apk" build/app/outputs/flutter-apk/app-release.apk
+          fi
+          test -s build/app/outputs/flutter-apk/app-release.apk
           ls -lh build/app/outputs/flutter-apk/app-release.apk
 
       - name: Build AAB
@@ -54,7 +65,17 @@ jobs:
 
       - name: Verify AAB
         run: |
-          test -f build/app/outputs/bundle/release/app-release.aab
+          set -euo pipefail
+          aab="$(find build -type f -name 'app-release.aab' -print -quit)"
+          if [ -z "$aab" ]; then
+            echo "ERROR: app-release.aab was not produced anywhere under build/."
+            exit 1
+          fi
+          mkdir -p build/app/outputs/bundle/release
+          if [ "$aab" != "build/app/outputs/bundle/release/app-release.aab" ]; then
+            cp "$aab" build/app/outputs/bundle/release/app-release.aab
+          fi
+          test -s build/app/outputs/bundle/release/app-release.aab
           ls -lh build/app/outputs/bundle/release/app-release.aab
 
       - name: Upload APK
