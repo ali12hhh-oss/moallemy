@@ -1109,3 +1109,5 @@ class _NumberGameState extends State<_NumberGame> {
           _Btn(_ar(value), const Color(0xFF16B878), () => answer(value)),
       ],
     );
+  }
+}
