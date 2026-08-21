@@ -48,30 +48,3 @@ android {
 flutter {
     source = "../.."
 }
-
-// Flutter 3.47 + the modern Android Gradle Plugin DSL can leave the
-// generated APK/AAB under android/app/build instead of copying it to the
-// root build directory where the Flutter CLI expects to find it.
-// Copy the release artifacts explicitly after Gradle finishes assembling them.
-val flutterApkOutput = rootProject.layout.projectDirectory.dir("../build/app/outputs/flutter-apk")
-val flutterAabOutput = rootProject.layout.projectDirectory.dir("../build/app/outputs/bundle/release")
-
-tasks.register<Copy>("copyReleaseApkToFlutterOutput") {
-    from(layout.buildDirectory.dir("outputs/apk/release"))
-    include("app-release.apk")
-    into(flutterApkOutput)
-}
-
-tasks.register<Copy>("copyReleaseAabToFlutterOutput") {
-    from(layout.buildDirectory.dir("outputs/bundle/release"))
-    include("app-release.aab")
-    into(flutterAabOutput)
-}
-
-tasks.named("assembleRelease") {
-    finalizedBy("copyReleaseApkToFlutterOutput")
-}
-
-tasks.named("bundleRelease") {
-    finalizedBy("copyReleaseAabToFlutterOutput")
-}
