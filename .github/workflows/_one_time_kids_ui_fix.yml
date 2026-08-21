@@ -1,0 +1,226 @@
+name: one-time kindergarten UI fix
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, 'one-time kindergarten UI fix applied') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Apply shapes and coloring improvements
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path('lib/features/children/kindergarten_stage_screen_v4.dart')
+          text = path.read_text(encoding='utf-8')
+
+          text = text.replace("late final List<String> drawings = widget.kg2\n      ? ['قطة']\n      : ['قطة', 'سمكة', 'فراشة'];", "late final List<String> drawings = [\n    'قطة', 'سمكة', 'فراشة', 'أرنب', 'فيل', 'أسد',\n  ];")
+
+          text = text.replace("""          Row(\n            children: [\n              Expanded(\n                child: _Btn(\n                  '🗑 مسح',\n                  const Color(0xFFE94F4F),\n                  () => setState(\n                    () => fills = List<Color>.filled(6, Colors.white),\n                  ),\n                ),\n              ),\n              Expanded(\n                child: _Btn(\n                  'التالي',\n                  const Color(0xFF16B878),\n                  drawing < drawings.length - 1\n                      ? () => setState(() {\n                            drawing++;\n                            fills = List<Color>.filled(6, Colors.white);\n                          })\n                      : () {},\n                ),\n              ),\n            ],\n          ),""", """          Row(\n            children: [\n              Expanded(\n                child: _Btn(\n                  'السابق',\n                  const Color(0xFF7652FF),\n                  drawing > 0\n                      ? () => setState(() {\n                            drawing--;\n                            fills = List<Color>.filled(6, Colors.white);\n                          })\n                      : () {},\n                ),\n              ),\n              Expanded(\n                child: _Btn(\n                  '🗑 مسح',\n                  const Color(0xFFE94F4F),\n                  () => setState(\n                    () => fills = List<Color>.filled(6, Colors.white),\n                  ),\n                ),\n              ),\n              Expanded(\n                child: _Btn(\n                  'التالي',\n                  const Color(0xFF16B878),\n                  drawing < drawings.length - 1\n                      ? () => setState(() {\n                            drawing++;\n                            fills = List<Color>.filled(6, Colors.white);\n                          })\n                      : () {},\n                ),\n              ),\n            ],\n          ),""")
+
+          start = text.index('class _AnimalGeometry')
+          end = text.index('class _ShapesPage', start)
+          animal_block = r'''class _AnimalGeometry {
+  final int type;
+  _AnimalGeometry(this.type);
+
+  int? hit(Offset p, Size s) {
+    final x = s.width / 2;
+    final y = s.height / 2;
+    switch (type) {
+      case 0:
+        if (Rect.fromCenter(center: Offset(x, y + 45), width: 210, height: 120).contains(p)) return 0;
+        if (Rect.fromCenter(center: Offset(x, y - 55), width: 125, height: 100).contains(p)) return 1;
+        return 2;
+      case 1:
+        if (Rect.fromCenter(center: Offset(x, y), width: 230, height: 125).contains(p)) return 0;
+        if (Path()..moveTo(x + 110, y)..lineTo(x + 170, y - 55)..lineTo(x + 170, y + 55)..close()..contains(p)) return 1;
+        return 2;
+      case 2:
+        if (Rect.fromCenter(center: Offset(x - 65, y - 35), width: 105, height: 130).contains(p)) return 0;
+        if (Rect.fromCenter(center: Offset(x + 65, y - 35), width: 105, height: 130).contains(p)) return 1;
+        if (Rect.fromCenter(center: Offset(x, y + 15), width: 45, height: 150).contains(p)) return 2;
+        return null;
+      case 3:
+        if (Rect.fromCenter(center: Offset(x, y + 45), width: 150, height: 150).contains(p)) return 0;
+        if (Rect.fromCenter(center: Offset(x, y - 55), width: 120, height: 105).contains(p)) return 1;
+        return 2;
+      case 4:
+        if (Rect.fromCenter(center: Offset(x - 20, y + 35), width: 190, height: 145).contains(p)) return 0;
+        if (Rect.fromCenter(center: Offset(x + 75, y - 35), width: 125, height: 115).contains(p)) return 1;
+        return 2;
+      default:
+        if (Rect.fromCenter(center: Offset(x, y + 35), width: 190, height: 145).contains(p)) return 0;
+        if (Rect.fromCenter(center: Offset(x, y - 55), width: 125, height: 125).contains(p)) return 1;
+        return 2;
+    }
+  }
+}
+
+class _ColoringPainter extends CustomPainter {
+  final int type;
+  final List<Color> fills;
+  _ColoringPainter(this.type, this.fills);
+
+  @override
+  void paint(Canvas c, Size s) {
+    final fill = Paint()..style = PaintingStyle.fill;
+    final line = Paint()..style = PaintingStyle.stroke..strokeWidth = 4..color = Colors.black87;
+    final x = s.width / 2;
+    final y = s.height / 2;
+    void oval(Offset center, double w, double h, int i) {
+      fill.color = fills[i];
+      c.drawOval(Rect.fromCenter(center: center, width: w, height: h), fill);
+      c.drawOval(Rect.fromCenter(center: center, width: w, height: h), line);
+    }
+    void circle(Offset center, double r, int i) => oval(center, r * 2, r * 2, i);
+    if (type == 0) {
+      oval(Offset(x, y + 45), 210, 120, 2);
+      circle(Offset(x, y - 45), 62, 0);
+      final ear1 = Path()..moveTo(x - 50, y - 75)..lineTo(x - 35, y - 135)..lineTo(x - 5, y - 80)..close();
+      final ear2 = Path()..moveTo(x + 5, y - 80)..lineTo(x + 35, y - 135)..lineTo(x + 50, y - 75)..close();
+      fill.color = fills[1]; c.drawPath(ear1, fill); c.drawPath(ear2, fill); c.drawPath(ear1, line); c.drawPath(ear2, line);
+    } else if (type == 1) {
+      oval(Offset(x, y), 230, 125, 0);
+      final tail = Path()..moveTo(x + 105, y)..lineTo(x + 170, y - 55)..lineTo(x + 170, y + 55)..close();
+      fill.color = fills[1]; c.drawPath(tail, fill); c.drawPath(tail, line);
+      circle(Offset(x + 78, y - 20), 7, 2);
+    } else if (type == 2) {
+      oval(Offset(x - 65, y - 35), 105, 130, 0);
+      oval(Offset(x + 65, y - 35), 105, 130, 1);
+      oval(Offset(x, y + 15), 45, 150, 2);
+      circle(Offset(x, y - 70), 10, 2);
+    } else if (type == 3) {
+      oval(Offset(x, y + 45), 150, 150, 0);
+      oval(Offset(x, y - 55), 120, 105, 1);
+      oval(Offset(x - 38, y - 115), 35, 105, 2);
+      oval(Offset(x + 38, y - 115), 35, 105, 2);
+    } else if (type == 4) {
+      oval(Offset(x - 20, y + 35), 190, 145, 0);
+      oval(Offset(x + 75, y - 35), 125, 115, 1);
+      circle(Offset(x + 25, y - 45), 48, 2);
+      final trunk = Path()..moveTo(x + 115, y - 10)..quadraticBezierTo(x + 150, y + 20, x + 120, y + 70);
+      c.drawPath(trunk, line);
+    } else {
+      oval(Offset(x, y + 35), 190, 145, 0);
+      circle(Offset(x, y - 55), 62, 1);
+      circle(Offset(x - 75, y - 65), 25, 2);
+      circle(Offset(x + 75, y - 65), 25, 2);
+      c.drawCircle(Offset(x, y - 55), 82, line);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ColoringPainter oldDelegate) => true;
+}
+
+'''
+          text = text[:start] + animal_block + text[end:]
+
+          start = text.index('class _ShapesPage')
+          end = text.index('class _ShapeDrawPage', start)
+          shapes_block = r'''class _ShapesPage extends StatelessWidget {
+  final bool kg2;
+  const _ShapesPage({required this.kg2});
+
+  @override
+  Widget build(BuildContext context) {
+    final names = kg2
+        ? const ['مربع', 'مثلث', 'دائرة', 'مستطيل', 'خماسي', 'سداسي']
+        : const ['مربع', 'مثلث', 'دائرة', 'مستطيل'];
+    return _Page(
+      'الأشكال',
+      [
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: names.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 1.15,
+          ),
+          itemBuilder: (context, index) {
+            final name = names[index];
+            return InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => _ShapeDrawPage(name: name)),
+              ),
+              child: Card(
+                child: Column(
+                  children: [
+                    Expanded(child: CustomPaint(painter: _ShapePreviewPainter(name))),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+        _Btn('السابق', const Color(0xFF7652FF), () => Navigator.pop(context)),
+      ],
+    );
+  }
+}
+
+class _ShapePreviewPainter extends CustomPainter {
+  final String name;
+  _ShapePreviewPainter(this.name);
+  @override
+  void paint(Canvas c, Size s) {
+    final p = Paint()..style = PaintingStyle.stroke..strokeWidth = 6..color = const Color(0xFF7652FF);
+    final center = Offset(s.width / 2, s.height / 2);
+    final w = s.width * .62;
+    final h = s.height * .58;
+    if (name == 'مربع') {
+      c.drawRect(Rect.fromCenter(center: center, width: h, height: h), p);
+    } else if (name == 'مستطيل') {
+      c.drawRect(Rect.fromCenter(center: center, width: w, height: h), p);
+    } else if (name == 'دائرة') {
+      c.drawCircle(center, h / 2, p);
+    } else {
+      final sides = name == 'خماسي' ? 5 : name == 'سداسي' ? 6 : 3;
+      final path = Path();
+      for (var i = 0; i < sides; i++) {
+        final a = -math.pi / 2 + i * 2 * math.pi / sides;
+        final point = Offset(center.dx + math.cos(a) * w / 2, center.dy + math.sin(a) * h / 2);
+        if (i == 0) path.moveTo(point.dx, point.dy); else path.lineTo(point.dx, point.dy);
+      }
+      path.close();
+      c.drawPath(path, p);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant _ShapePreviewPainter oldDelegate) => oldDelegate.name != name;
+}
+
+'''
+          text = text[:start] + shapes_block + text[end:]
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Verify Dart syntax and remove one-time workflow
+        run: |
+          dart format lib/features/children/kindergarten_stage_screen_v4.dart
+          git diff --check
+          git add lib/features/children/kindergarten_stage_screen_v4.dart .github/workflows/_one_time_kids_ui_fix.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'one-time kindergarten UI fix applied'
+          git push
